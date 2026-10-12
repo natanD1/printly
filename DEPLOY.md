@@ -187,7 +187,7 @@ docker exec -i printly-mysql-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" printly_db 
 Cadastra pelo site usando `BOOTSTRAP001`, depois:
 
 ```bash
-docker exec -i printly-mysql-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" printly_db -e "UPDATE users SET IsAdmin = 1 WHERE Email = 'seu-email';"
+docker exec -i printly-mysql-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" printly_db -e "UPDATE users SET IsAdmin = 1 WHERE Email = 'admin@printly.com';"
 ```
 
 Loga de novo (token novo com a claim de admin).
@@ -235,6 +235,94 @@ ssh -L 3308:localhost:3308 usuario@SEU_IP_VPS -N
 ```
 Conecta o client em `127.0.0.1:3308`. Remove a porta do compose depois de usar.
 
+## 7. Pipeline de deploy automático (CI/CD)
+
+Deploy manual (seção 5) funciona bem, mas dá pra automatizar: push na branch `prod` de qualquer um dos dois repos já sobe sozinho na VPS. Abordagem mais simples pro tamanho desse projeto — build acontece **na própria VPS** via SSH a partir do GitHub Actions (sem registry de imagem Docker; se o build começar a pesar muito no servidor, aí sim vale migrar pra build-no-CI + `docker push`/`pull`).
+
+### 7.1. Chave SSH dedicada pro deploy
+
+Não reaproveita sua chave pessoal — gera uma só pra isso, sem senha (o Actions não tem como digitar passphrase):
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/printly_deploy_key -N ""
+```
+
+Isso cria `~/.ssh/printly_deploy_key` (privada) e `~/.ssh/printly_deploy_key.pub` (pública), na sua máquina.
+
+Adiciona a **pública** no `authorized_keys` do usuário `deploy` na VPS:
+
+```bash
+cat ~/.ssh/printly_deploy_key.pub | ssh deploy@SEU_IP_VPS 'cat >> ~/.ssh/authorized_keys'
+```
+
+### 7.2. Secrets no GitHub
+
+Em **cada um dos dois repos** (`printly` e `printlyBack`) → Settings → Secrets and variables → Actions → New repository secret:
+
+| Secret | Valor |
+|---|---|
+| `VPS_HOST` | IP da VPS |
+| `VPS_USER` | `deploy` |
+| `VPS_SSH_KEY` | conteúdo de `~/.ssh/printly_deploy_key` (a **privada**, inteira, incluindo `-----BEGIN...` e `-----END...`) |
+
+### 7.3. Workflow no repo do front (`printly`)
+
+`.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [prod]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/printly/front && git pull
+            cd ~/printly && docker compose --env-file .env up -d --build printly-frontend
+```
+
+### 7.4. Workflow no repo do back (`printlyBack`)
+
+`.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [prod]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/printly/back && git pull
+            cd ~/printly && docker compose --env-file .env up -d --build printly-backend
+```
+
+Se o push trouxer migration nova, roda o script de migration (seção 4) manualmente depois do deploy — não dá pra automatizar isso sem risco (migration rodando sem supervisão num banco de produção é perigoso, melhor manter como passo manual revisado por você).
+
+### 7.5. Testar
+
+Depois de criar os dois workflows e os secrets, dá um push qualquer na branch `prod` de um dos repos e acompanha em **Actions** (aba do GitHub) se o job roda verde. Se falhar, o log do Actions mostra o erro do SSH/docker compose.
+
 ## Checklist rápido
 
 - [ ] Docker instalado na VPS, usuário no grupo `docker`
@@ -247,3 +335,6 @@ Conecta o client em `127.0.0.1:3308`. Remove a porta do compose depois de usar.
 - [ ] Seed de marcas de filamento aplicado
 - [ ] Convite bootstrap criado + primeiro usuário promovido a admin
 - [ ] 3306 nunca exposto publicamente (só túnel SSH quando precisar)
+- [ ] (Opcional) Chave SSH dedicada de deploy gerada e adicionada ao `authorized_keys` da VPS
+- [ ] (Opcional) Secrets `VPS_HOST`/`VPS_USER`/`VPS_SSH_KEY` criados nos dois repos
+- [ ] (Opcional) Workflow `.github/workflows/deploy.yml` criado nos dois repos, testado com push na `prod`

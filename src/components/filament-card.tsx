@@ -4,10 +4,14 @@ import { Trash2 } from "lucide-react";
 import { type MouseEvent, useCallback, useState } from "react";
 import { FilamentFormDialog } from "@/components/filament-form-dialog";
 import { ModalCommunication } from "@/components/modal-communication";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import type { FilamentSchema } from "@/schemas/filament-schema";
 import type { Filament } from "@/types/filament";
+
+const LOW_STOCK_THRESHOLD_PERCENTAGE = 20;
 
 interface FilamentCardProps {
   filament: Filament;
@@ -57,6 +61,12 @@ export function FilamentCard({
     }
   }, []);
 
+  const percentRemaining =
+    filament.initialWeight > 0
+      ? (filament.weight / filament.initialWeight) * 100
+      : 0;
+  const isLowStock = percentRemaining <= LOW_STOCK_THRESHOLD_PERCENTAGE;
+
   return (
     <>
       <FilamentFormDialog
@@ -73,22 +83,38 @@ export function FilamentCard({
               <Trash2 className="text-destructive" />
               <span className="sr-only">Excluir filamento</span>
             </Button>
-            <CardContent className="flex items-center gap-3">
-              <span
-                className="size-10 shrink-0 rounded-full ring-1 ring-foreground/10"
-                style={{ backgroundColor: filament.colorHex }}
-              />
-              <div className="flex flex-col gap-0.5">
-                <p className="font-medium text-sm">{filament.name}</p>
-                <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                  {filament.brand.nameBrand} · {filament.type.name}
-                </p>
-                <p className="text-xs">
-                  {filament.weight.toLocaleString("pt-BR", {
-                    maximumFractionDigits: 2,
-                  })}{" "}
-                  kg
-                </p>
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="relative flex size-10 shrink-0 items-center justify-center rounded-full ring-1 ring-foreground/10"
+                    style={{ backgroundColor: filament.colorHex }}
+                  >
+                    <span className="size-3 rounded-full bg-card ring-1 ring-foreground/10" />
+                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <p className="font-medium text-sm">{filament.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {filament.brand.nameBrand}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="outline">{filament.type.name}</Badge>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Progress
+                  className="flex-1"
+                  indicatorClassName={
+                    isLowStock
+                      ? "bg-rose-500 dark:bg-rose-400"
+                      : "bg-lime-500 dark:bg-lime-400"
+                  }
+                  value={percentRemaining}
+                />
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {Math.round(percentRemaining)}%
+                </span>
               </div>
             </CardContent>
           </Card>

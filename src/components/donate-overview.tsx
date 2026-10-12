@@ -121,14 +121,13 @@ export function DonateOverview() {
         <div className="flex flex-col gap-2">
           <p>
             O Printly é gratuito e vai continuar sendo. Ele não tem anúncio, não
-            vende dado de ninguém — é mantido no tempo livre porque eu acredito
+            vende dado de ninguém é mantido no tempo livre porque eu acredito
             que gente que faz impressão 3D merece uma ferramenta decente pra
             controlar custo e produção.
           </p>
           <p>
-            Se o projeto te ajudou de alguma forma, uma doação — de qualquer
-            valor — cobre servidor, domínio e me dá ânimo pra continuar
-            construindo.
+            Se o projeto te ajudou de alguma forma, uma doação de qualquer valor
+            cobre servidor, domínio e me dá ânimo pra continuar construindo.
           </p>
         </div>
       </div>

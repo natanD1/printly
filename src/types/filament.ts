@@ -7,6 +7,7 @@ export interface Filament {
   createdAt: string;
   filamentPrice: number;
   id: string;
+  initialWeight: number;
   name: string;
   type: FilamentType;
   updatedAt: string | null;
