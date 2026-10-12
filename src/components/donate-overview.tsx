@@ -26,10 +26,10 @@ function CreatorNote() {
         <div className="overflow-hidden rounded-full">
           {/** biome-ignore lint/performance/noImgElement: asset estático simples, não precisa de otimização do next/image aqui */}
           <img
-            alt="Natan, criador do PrintFlow"
+            alt="Natan, criador do Printly"
             className="size-full object-cover"
             height={120}
-            src="/creator_of_printflow.png"
+            src="/creator_of_printly.png"
             width={120}
           />
         </div>
@@ -68,9 +68,9 @@ export function DonateOverview() {
           Apoie um projeto feito com carinho
         </h1>
         <p className="max-w-lg text-muted-foreground">
-          O PrintFlow nasceu pra ajudar quem imprime em 3D a organizar
-          filamento, produto e preço sem planilha. Feito nas horas vagas, sem
-          fins lucrativos.
+          O Printly nasceu pra ajudar quem imprime em 3D a organizar filamento,
+          produto e preço sem planilha. Feito nas horas vagas, sem fins
+          lucrativos.
         </p>
       </div>
 
@@ -120,10 +120,10 @@ export function DonateOverview() {
         <CreatorNote />
         <div className="flex flex-col gap-2">
           <p>
-            O PrintFlow é gratuito e vai continuar sendo. Ele não tem anúncio,
-            não vende dado de ninguém — é mantido no tempo livre porque eu
-            acredito que gente que faz impressão 3D merece uma ferramenta
-            decente pra controlar custo e produção.
+            O Printly é gratuito e vai continuar sendo. Ele não tem anúncio, não
+            vende dado de ninguém — é mantido no tempo livre porque eu acredito
+            que gente que faz impressão 3D merece uma ferramenta decente pra
+            controlar custo e produção.
           </p>
           <p>
             Se o projeto te ajudou de alguma forma, uma doação — de qualquer
@@ -134,7 +134,7 @@ export function DonateOverview() {
       </div>
       <footer>
         <p className="text-muted-foreground text-xs">
-          O PrintFlow é um projeto, feito por{" "}
+          O Printly é um projeto, feito por{" "}
           <a
             className="hover:text-muted-foreground/80"
             href="https://www.linkedin.com/in/natandourado/"

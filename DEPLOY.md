@@ -1,173 +1,176 @@
-# Deploy — PrintFlow
+# Deploy — Printly
 
-Guia real (testado e funcionando) pra subir front (este repo), backend e MySQL no VPS, usando Docker + o Traefik **compartilhado** já existente no servidor (não um nginx dedicado — o servidor já tinha Traefik ocupando 80/443 pra outros projetos).
+Guia real pra subir front (este repo), backend e MySQL numa VPS **dedicada só ao Printly** (nada compartilhado), usando Docker + Caddy (HTTPS automático via Let's Encrypt, sem configuração manual de certificado).
 
-Domínios: `printflow.natandourado.com.br` (front) e `api.printflow.natandourado.com.br` (back).
+Domínios: `printly.app.br` (front) e `api.printly.app.br` (back).
 
-## 0. Contexto importante: Traefik compartilhado
+## 0. Acesso SSH inicial
 
-O VPS já roda um Traefik (do projeto MeetScheduleService, `/opt/10s/dev/MeetScheduleService/docker-compose.yml`) que atende **todos** os sites do servidor (vetpet, bardojacare, meetschedule, printflow), ocupando as portas 80/443. Não dá pra colocar um nginx próprio nelas — daria conflito de porta. O jeito é o PrintFlow entrar nessa mesma rede Docker (`meetscheduleservice_meetschedule-network`) e usar labels do Traefik pra registrar suas rotas.
+```bash
+ssh root@SEU_IP_VPS
+```
 
-**Regra de ouro:** nomeie os serviços do `docker-compose.yml` do PrintFlow com prefixo único (`printflow-backend`, `printflow-frontend`), **nunca** nomes genéricos tipo `backend`/`frontend`. Se outro projeto no mesmo servidor também tiver um serviço chamado `backend`, o DNS interno do Docker resolve o hostname pros **dois containers em round-robin** (mesma rede compartilhada = mesmo alias) — metade das requisições cai no container errado e retorna 404 aleatório, muito difícil de diagnosticar (já caímos nessa). Descoberta com `docker exec <container> node -e "require('dns').promises.lookup('backend',{all:true}).then(console.log)"` — se aparecer mais de um IP, é colisão de nome.
+Se a VPS veio só com acesso root por senha, crie um usuário não-root com sudo (opcional, mas recomendado) e copie sua chave pra ele:
 
-## 1. DNS no registro.br
+```bash
+adduser deploy
+usermod -aG sudo deploy
+rsync --archive --chown=deploy:deploy ~/.ssh /home/deploy
+```
 
-Painel → domínio `natandourado.com.br` → Editar Zona DNS. Cria 2 registros tipo **A**, apontando pro IP do VPS:
+Dali em diante, `ssh deploy@SEU_IP_VPS`.
+
+## 1. Instalar Docker
+
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
+# saia e entre de novo no SSH pra aplicar o grupo (ou rode `newgrp docker`)
+```
+
+Firewall básico (se o provedor não cuidar disso):
+
+```bash
+sudo ufw allow 22
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw enable
+```
+
+## 2. DNS
+
+`printly.app.br` é domínio próprio (registro.br, extensão `.app.br`), não subdomínio de outro domínio — registre-o lá se ainda não tiver. Depois, no painel do domínio → Editar Zona DNS, cria (ou atualiza, se for migração de outra VPS) 2 registros tipo **A**, apontando pro IP da VPS:
 
 | Nome | Tipo | Valor |
 |---|---|---|
-| `printflow` | A | `SEU_IP_VPS` |
-| `api.printflow` | A | `SEU_IP_VPS` |
+| `@` (raiz) | A | `SEU_IP_VPS` |
+| `api` | A | `SEU_IP_VPS` |
 
-O campo "Nome" leva **só** o pedaço do subdomínio — o painel já concatena com `.natandourado.com.br` sozinho.
+Propagação pode levar de minutos a algumas horas.
 
-## 2. Clonar os repos e montar o compose
+## 3. Clonar os repos e montar o compose
 
 ```bash
-mkdir -p ~/printflow && cd ~/printflow
-git clone https://github.com/natanD1/printflowBack.git back
-git clone https://github.com/natanD1/printflow.git front
+mkdir -p ~/printly && cd ~/printly
+git clone https://github.com/natanD1/printlyBack.git back
+git clone https://github.com/natanD1/printly.git front
 ```
 
-`~/printflow/.env` (senha só com letras/números — senha com `\`, `@`, `=` quebra o parser de connection string do MySqlConnector):
+`~/printly/.env` (senha só com letras/números — senha com `\`, `@`, `=`, `;` quebra o parser de connection string do MySqlConnector):
 
-```
+```bash
+cat > ~/printly/.env << 'EOF'
 MYSQL_ROOT_PASSWORD=<openssl rand -hex 24>
 JWT_SECRET=<openssl rand -base64 32>
+EOF
 ```
 
-`~/printflow/docker-compose.yml`:
+`~/printly/Caddyfile`:
+
+```
+printly.app.br {
+    reverse_proxy printly-frontend:3000
+}
+
+api.printly.app.br {
+    reverse_proxy printly-backend:8080
+}
+```
+
+`~/printly/docker-compose.yml`:
 
 ```yaml
 services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
   mysql:
     image: mysql:8.0
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: print_flow_db
+      MYSQL_DATABASE: printly_db
     volumes:
       - mysql_data:/var/lib/mysql
     # sem "ports:" — só acessível dentro da rede do compose
 
-  printflow-backend:
+  printly-backend:
     build: ./back
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=print_flow_db;User=root;Password=${MYSQL_ROOT_PASSWORD};"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=printly_db;User=root;Password=${MYSQL_ROOT_PASSWORD};"
       Jwt__Secret: ${JWT_SECRET}
-      Jwt__Issuer: PrintFlow.WebApi
-      Jwt__Audience: PrintFlow.Client
+      Jwt__Issuer: Printly.WebApi
+      Jwt__Audience: Printly.Client
       Jwt__ExpirationMinutes: "60"
     depends_on:
       - mysql
-    ports:
-      - "127.0.0.1:4000:8080"
-    networks:
-      - default
-      - traefik-shared
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.printflow-api.rule=Host(`api.printflow.natandourado.com.br`)"
-      - "traefik.http.routers.printflow-api.entrypoints=web"
-      - "traefik.http.routers.printflow-api.middlewares=redirect-to-https"
-      - "traefik.http.routers.printflow-api-secure.rule=Host(`api.printflow.natandourado.com.br`)"
-      - "traefik.http.routers.printflow-api-secure.entrypoints=websecure"
-      - "traefik.http.routers.printflow-api-secure.tls=true"
-      - "traefik.http.routers.printflow-api-secure.service=printflow-api"
-      - "traefik.http.services.printflow-api.loadbalancer.server.port=8080"
-      - "traefik.docker.network=meetscheduleservice_meetschedule-network"
 
-  printflow-frontend:
+  printly-frontend:
     build: ./front
     restart: unless-stopped
     environment:
-      API_URL: http://printflow-backend:8080
+      API_URL: http://printly-backend:8080
       NODE_ENV: production
     depends_on:
-      - printflow-backend
-    ports:
-      - "127.0.0.1:3000:3000"
-    networks:
-      - default
-      - traefik-shared
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.printflow-app.rule=Host(`printflow.natandourado.com.br`)"
-      - "traefik.http.routers.printflow-app.entrypoints=web"
-      - "traefik.http.routers.printflow-app.middlewares=redirect-to-https"
-      - "traefik.http.routers.printflow-app-secure.rule=Host(`printflow.natandourado.com.br`)"
-      - "traefik.http.routers.printflow-app-secure.entrypoints=websecure"
-      - "traefik.http.routers.printflow-app-secure.tls=true"
-      - "traefik.http.routers.printflow-app-secure.service=printflow-app"
-      - "traefik.http.services.printflow-app.loadbalancer.server.port=3000"
-      - "traefik.docker.network=meetscheduleservice_meetschedule-network"
+      - printly-backend
 
 volumes:
   mysql_data:
-
-networks:
-  traefik-shared:
-    external: true
-    name: meetscheduleservice_meetschedule-network
+  caddy_data:
+  caddy_config:
 ```
 
-`API_URL` usa `http://printflow-backend:8080` — nome do serviço, não `backend` (ver regra de ouro acima). `frontend`/`backend` falam entre si pela rede interna do Docker, nunca pelo domínio público — sem CORS necessário mesmo com domínios separados (mesmo desenho de "dupla camada" do `CLAUDE.md`, browser nunca fala direto com a API).
+Sem `ports:` nem labels de proxy nos serviços `printly-*` — o Caddy fala com eles pelo nome do serviço na rede padrão do compose (DNS interno do Docker), e é o único container que expõe 80/443 pro mundo. `API_URL` usa `http://printly-backend:8080` — nome do serviço — e `frontend`/`backend` falam entre si só pela rede interna, nunca pelo domínio público (mesmo desenho de "dupla camada" do `CLAUDE.md`: o browser nunca fala direto com a API).
+
+Subir:
 
 ```bash
-cd ~/printflow
+cd ~/printly
 docker compose --env-file .env up -d --build
 ```
 
-### Certificado SSL (reaproveitando certbot já instalado no servidor)
+Acompanhe os logs do Caddy pra confirmar que o certificado saiu (pode levar uns 30s-1min na primeira vez):
 
 ```bash
-docker stop traefik   # container do Traefik compartilhado — ~15s de downtime nos outros sites
-sudo certbot certonly --standalone \
-  --config-dir /opt/10s/dev/MeetScheduleService/letsencrypt \
-  --work-dir /opt/10s/dev/MeetScheduleService/letsencrypt \
-  --logs-dir /opt/10s/dev/MeetScheduleService/letsencrypt \
-  -d printflow.natandourado.com.br \
-  -d api.printflow.natandourado.com.br
-docker start traefik
+docker compose logs -f caddy
 ```
 
-```bash
-sudo tee /opt/10s/dev/MeetScheduleService/traefik/dynamic/printflow-certs.yml << 'EOF'
-tls:
-  certificates:
-    - certFile: /etc/letsencrypt/live/printflow.natandourado.com.br/fullchain.pem
-      keyFile: /etc/letsencrypt/live/printflow.natandourado.com.br/privkey.pem
-EOF
-```
-
-O Traefik observa essa pasta (`--providers.file.watch=true`) e aplica sozinho, sem reiniciar de novo.
-
-### Aplicar as migrations (schema do banco)
+## 4. Aplicar as migrations (schema do banco)
 
 A imagem de runtime do backend só tem o binário publicado (sem `dotnet-ef`). Roda um container temporário com o SDK, na mesma rede do compose, falando com o `mysql` direto pelo nome interno — sem expor porta nenhuma:
 
 ```bash
-cat > ~/printflow/migrate.sh << 'EOF'
+cat > ~/printly/migrate.sh << 'EOF'
 #!/bin/bash
 set -e
 dotnet tool install --global dotnet-ef
 export PATH="$PATH:/root/.dotnet/tools"
-dotnet restore PrintFlow.sln
+dotnet restore Printly.sln
 dotnet ef database update \
-  --project src/PrintFlow.Infrastructure \
-  --startup-project src/PrintFlow.WebApi
+  --project src/Printly.Infrastructure \
+  --startup-project src/Printly.WebApi
 EOF
 
+source ~/printly/.env
+
 docker run --rm -it \
-  --network printflow_default \
-  -v ~/printflow/back:/src \
-  -v ~/printflow/migrate.sh:/migrate.sh \
+  --network printly_default \
+  -v ~/printly/back:/src \
+  -v ~/printly/migrate.sh:/migrate.sh \
   -w /src \
-  -e ConnectionStrings__DefaultConnection='Server=mysql;Port=3306;Database=print_flow_db;User=root;Password=SUA_SENHA;' \
-  -e Jwt__Secret='SEU_JWT_SECRET' \
-  -e Jwt__Issuer='PrintFlow.WebApi' \
-  -e Jwt__Audience='PrintFlow.Client' \
+  -e ConnectionStrings__DefaultConnection="Server=mysql;Port=3306;Database=printly_db;User=root;Password=${MYSQL_ROOT_PASSWORD};" \
+  -e Jwt__Secret="${JWT_SECRET}" \
+  -e Jwt__Issuer='Printly.WebApi' \
+  -e Jwt__Audience='Printly.Client' \
   -e Jwt__ExpirationMinutes='60' \
   mcr.microsoft.com/dotnet/sdk:8.0 \
   bash /migrate.sh
@@ -178,26 +181,43 @@ docker run --rm -it \
 Não tem seed — o cadastro exige um código de convite válido, e virar admin exige `UPDATE` manual. Faz assim uma vez:
 
 ```bash
-docker exec -i printflow-mysql-1 mysql -uroot -p'SUA_SENHA' print_flow_db -e "INSERT INTO invite_codes (Id, Code, Status, ExpiresAt, GeneratedByUserId, UsedByUserId, UsedAt, RevokedAt, CreatedAt, UpdatedAt) VALUES (UUID(), 'BOOTSTRAP001', 'Available', DATE_ADD(NOW(), INTERVAL 30 DAY), NULL, NULL, NULL, NULL, NOW(), NULL);"
+docker exec -i printly-mysql-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" printly_db -e "INSERT INTO invite_codes (Id, Code, Status, ExpiresAt, GeneratedByUserId, UsedByUserId, UsedAt, RevokedAt, CreatedAt, UpdatedAt) VALUES (UUID(), 'BOOTSTRAP001', 'Available', DATE_ADD(NOW(), INTERVAL 30 DAY), NULL, NULL, NULL, NULL, NOW(), NULL);"
 ```
 
 Cadastra pelo site usando `BOOTSTRAP001`, depois:
 
 ```bash
-docker exec -i printflow-mysql-1 mysql -uroot -p'SUA_SENHA' print_flow_db -e "UPDATE users SET IsAdmin = 1 WHERE Email = 'seu-email';"
+docker exec -i printly-mysql-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" printly_db -e "UPDATE users SET IsAdmin = 1 WHERE Email = 'seu-email';"
 ```
 
 Loga de novo (token novo com a claim de admin).
 
-## 3. Redeploy depois de mudar código
+### Marcas de filamento
+
+Seed com as marcas já cadastradas localmente (nome + imagem em base64), em `back/seeds/filaments-brands-seed.sql`. `INSERT IGNORE` — rodar mais de uma vez não duplica.
 
 ```bash
-cd ~/printflow/front && git pull   # ou back
-cd ~/printflow
-docker compose --env-file .env up -d --build printflow-frontend   # ou printflow-backend
+docker exec -i printly-mysql-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" printly_db < ~/printly/back/seeds/filaments-brands-seed.sql
 ```
 
-## 4. Acessar o MySQL de produção com um client gráfico (Workbench etc)
+Pra atualizar depois de cadastrar/editar marcas localmente, regenerar o arquivo:
+
+```bash
+mysqldump -h 127.0.0.1 -P 3306 -u root -p'SUA_SENHA_LOCAL' \
+  --no-create-info --skip-triggers --complete-insert --skip-comments --set-gtid-purged=OFF \
+  printly_db filaments_brands 2>/dev/null > back/seeds/filaments-brands-seed.sql
+sed -i '' 's/^INSERT INTO `filaments_brands`/INSERT IGNORE INTO `filaments_brands`/' back/seeds/filaments-brands-seed.sql
+```
+
+## 5. Redeploy depois de mudar código
+
+```bash
+cd ~/printly/front && git pull   # ou back
+cd ~/printly
+docker compose --env-file .env up -d --build printly-frontend   # ou printly-backend
+```
+
+## 6. Acessar o MySQL de produção com um client gráfico (Workbench etc)
 
 Nunca expor 3306 pro mundo. Publica só em loopback e usa túnel SSH:
 
@@ -217,11 +237,13 @@ Conecta o client em `127.0.0.1:3308`. Remove a porta do compose depois de usar.
 
 ## Checklist rápido
 
-- [ ] Registros A criados no registro.br (`printflow` e `api.printflow`)
-- [ ] Serviços do compose com nome único (`printflow-backend`/`printflow-frontend`, nunca genérico — servidor compartilhado com outros projetos)
+- [ ] Docker instalado na VPS, usuário no grupo `docker`
+- [ ] Firewall liberando só 22/80/443
+- [ ] Domínio `printly.app.br` registrado e registros A (`@` e `api`) apontando pro IP da VPS
 - [ ] `.env` com senha só alfanumérica (sem `\`, `@`, `=`, `;`)
-- [ ] `docker compose up -d --build` rodando os 3 serviços
-- [ ] Certificado emitido reaproveitando o certbot/config-dir do Traefik compartilhado
+- [ ] `docker compose up -d --build` rodando os 4 serviços (`caddy`, `mysql`, `printly-backend`, `printly-frontend`)
+- [ ] Certificado emitido automaticamente pelo Caddy (confirmar nos logs)
 - [ ] Migrations aplicadas via container SDK temporário (sem expor porta do banco)
+- [ ] Seed de marcas de filamento aplicado
 - [ ] Convite bootstrap criado + primeiro usuário promovido a admin
 - [ ] 3306 nunca exposto publicamente (só túnel SSH quando precisar)

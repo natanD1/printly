@@ -1,6 +1,6 @@
 import type { NextResponse } from "next/server";
 
-export const AUTH_COOKIE_NAME = "printflow_token";
+export const AUTH_COOKIE_NAME = "printly_token";
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
 

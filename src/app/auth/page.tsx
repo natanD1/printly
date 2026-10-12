@@ -7,10 +7,10 @@ export default function AuthPage() {
     <main className="relative flex flex-1 items-center justify-center p-4">
       <AuthCard />
       <Link
-        aria-label="Apoie o PrintFlow"
+        aria-label="Apoie o Printly"
         className="absolute right-4 bottom-4 flex size-10 cursor-pointer flex-col items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-rose-500"
         href="/doar"
-        title="Apoie o PrintFlow"
+        title="Apoie o Printly"
       >
         <Heart className="size-5 animate-pulse" />
       </Link>

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  description: "PrintFlow",
+  description: "Printly",
   icons: {
     apple: "/favicon-180.png",
     icon: [
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
       { sizes: "512x512", type: "image/png", url: "/favicon-512.png" },
     ],
   },
-  title: "PrintFlow",
+  title: "Printly",
 };
 
 export default function RootLayout({

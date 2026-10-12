@@ -59,7 +59,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 overflow-hidden rounded-md p-2 group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0!">
           <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-accent">
             <Image
-              alt="PrintFlow"
+              alt="Printly"
               className="size-full object-cover"
               height={32}
               priority
