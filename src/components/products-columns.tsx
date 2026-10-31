@@ -17,13 +17,18 @@ export function buildProductsColumns(
       header: "Nome do produto",
     },
     {
+      accessorKey: "quantity",
+      header: "Qtd",
+    },
+    {
       accessorKey: "costPrice",
       cell: ({ row }) => formatCurrency(row.original.costPrice),
       header: "Custo de produção",
     },
     {
       accessorKey: "totalFilament",
-      cell: ({ row }) => formatWeight(row.original.totalFilament),
+      cell: ({ row }) =>
+        formatWeight(row.original.totalFilament * row.original.quantity),
       header: "Total de filamento",
     },
     {

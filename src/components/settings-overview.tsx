@@ -15,7 +15,7 @@ export function SettingsOverview() {
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {isLoading || !settings ? (
-        <Skeleton className="h-80 w-full" />
+        <Skeleton className="h-[48rem] w-full" />
       ) : (
         <SettingsForm onSubmit={updateSettings} settings={settings} />
       )}

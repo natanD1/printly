@@ -32,10 +32,13 @@ export function HomeOverview() {
         0
       ),
       hoursThisMonth: productsThisMonth.reduce(
-        (total, product) => total + product.totalHours,
+        (total, product) => total + product.totalHours * product.quantity,
         0
       ),
-      productsMonthly: productsThisMonth.length,
+      productsMonthly: productsThisMonth.reduce(
+        (total, product) => total + product.quantity,
+        0
+      ),
     };
   }, [products]);
 

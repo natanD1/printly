@@ -13,9 +13,11 @@ export interface Product {
   id: string;
   productName: string;
   productPhoto: string | null;
+  quantity: number;
   salePrice: number;
   suggestedSalePrice: number;
   totalFilament: number;
   totalHours: number;
+  unitSalePrice: number;
   updatedAt: string | null;
 }

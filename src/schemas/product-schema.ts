@@ -9,6 +9,7 @@ export const productSchema = z.object({
   filaments: z.array(productFilamentEntrySchema),
   photo: z.instanceof(File).nullable(),
   productName: z.string().min(1, "Nome é obrigatório"),
+  quantity: z.number().int("Quantidade deve ser inteira").min(1, "Mínimo 1"),
   salePriceOverride: z
     .number()
     .min(0, "Preço não pode ser negativo")

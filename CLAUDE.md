@@ -196,17 +196,21 @@ Todo hook de leitura de lista (`useFilaments`, `useProducts`, `useInviteCodes`) 
 
 ## Cálculo automático de preço (produtos)
 
-`Product.costPrice`/`salePrice` **não são digitados** — o backend calcula sozinho a cada `POST`/`PUT /products`:
+`Product.costPrice`/`salePrice` **não são digitados** — o backend calcula sozinho a cada `POST`/`PUT /products` (`ProductPricingCalculator`, `Printly.Application`). Gramas e horas do produto são **por peça**; `quantity` (padrão 1) multiplica o lote:
 
 ```
-custo_filamento = Σ (gramsUsed / 1000 × filament.filamentPrice) de cada filamento vinculado
-custo_energia   = totalHours × (settings.averagePowerWatts / 1000) × settings.kwhPrice
-costPrice       = custo_filamento + custo_energia
-suggestedSalePrice = costPrice × (1 + settings.defaultProfitMarginPercentage / 100)
-salePrice       = salePriceOverride (se enviado) senão suggestedSalePrice
+material      = Σ (gramsUsed × qtd / 1000) × filament.filamentPrice
+energia       = (averagePowerWatts / 1000) × totalHours × qtd × kwhPrice
+depreciação   = depreciationEnabled ? printerValue / printerLifespanHours × totalHours × qtd : 0
+manutenção    = maintenanceEnabled (e depreciação ligada) ? depreciação × maintenancePercentage / 100 : 0
+falha         = failureEnabled ? (material + energia + depreciação + manutenção) × failureRatePercentage / 100 : 0
+costPrice     = material + energia + depreciação + manutenção + falha        (custo real do lote)
+suggestedSalePrice = costPrice × (1 + defaultProfitMarginPercentage / 100)   (lote)
+salePrice     = salePriceOverride × qtd (se enviado) senão suggestedSalePrice  (lote)
+unitSalePrice = salePrice / qtd
 ```
 
-`settings` vem de `UserSettings` (backend, 1:1 por usuário, tela `/configuracoes`). O front nunca reproduz essa conta — só manda `totalHours`, os filamentos usados (`filamentId` + `gramsUsed`) e, opcionalmente, `salePriceOverride` (pra sobrescrever o preço sugerido, ex: arredondar/promoção). `ProductDto`/`Product` (`src/types/product.ts`) trazem os três: `costPrice` (fato, calculado), `salePrice` (valor final, usado de verdade) e `suggestedSalePrice` (o que a fórmula sugeriu — sempre recalculado com a margem *atual*, não fica "preso" no valor de quando o produto foi criado). `ProductDetailDialog` é o único lugar que mostra os três lado a lado.
+`settings` vem de `UserSettings` (backend, 1:1 por usuário, tela `/configuracoes`). Depreciação, manutenção e perda por falha são **opcionais, cada uma com liga/desliga** (`depreciationEnabled`, `maintenanceEnabled`, `failureEnabled`, desligados por padrão — então produtos antigos mantêm o mesmo custo). Mão de obra ainda não existe. O front nunca reproduz essa conta — só manda `totalHours`, `quantity`, os filamentos usados (`filamentId` + `gramsUsed`, por peça) e, opcionalmente, `salePriceOverride` (**preço por unidade**; `0`/vazio vira `null` no submit pra usar o sugerido). `ProductDto`/`Product` (`src/types/product.ts`) trazem `costPrice`, `salePrice` (total do lote, usado no faturamento da home), `unitSalePrice` e `suggestedSalePrice` (sempre recalculado com a margem *atual*). O estoque de filamento é descontado em `gramsUsed × quantity`.
 
 ## Gotchas de formulário (react-hook-form + campos numéricos/nativos)
 

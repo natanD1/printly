@@ -102,6 +102,7 @@ export function ProductFormDialog({
                     })),
                     photo: null,
                     productName: product.productName,
+                    quantity: product.quantity,
                     salePriceOverride: null,
                     totalHours: product.totalHours,
                   }

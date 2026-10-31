@@ -5,6 +5,8 @@ import type { ChangeEvent } from "react";
 import { useCallback, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { NumberField } from "@/components/number-field";
+import { NumberInput } from "@/components/number-input";
 import { ProductFilamentPicker } from "@/components/product-filament-picker";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
@@ -24,6 +26,7 @@ const EMPTY_VALUES: ProductSchema = {
   filaments: [],
   photo: null,
   productName: "",
+  quantity: 1,
   salePriceOverride: null,
   totalHours: 0,
 };
@@ -40,6 +43,7 @@ export function ProductForm({
     resolver: zodResolver(productSchema),
   });
   const {
+    control,
     register,
     handleSubmit,
     setValue,
@@ -54,7 +58,10 @@ export function ProductForm({
     Math.round((initialTotalHours - initialHoursPart) * 60)
   );
 
-  const submit = handleSubmit(onSubmit);
+  // Preço de venda 0 ou vazio = "usar o sugerido": manda null pro backend não sobrescrever o preço calculado.
+  const submit = handleSubmit((data) =>
+    onSubmit({ ...data, salePriceOverride: data.salePriceOverride || null })
+  );
 
   const handlePhotoChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -64,8 +71,8 @@ export function ProductForm({
   );
 
   const handleHoursChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const hours = Math.max(0, Number(event.target.value) || 0);
+    (value: number | null) => {
+      const hours = value ?? 0;
       setHoursPart(hours);
       setValue("totalHours", hours + minutesPart / 60, {
         shouldValidate: true,
@@ -75,11 +82,8 @@ export function ProductForm({
   );
 
   const handleMinutesChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const minutes = Math.min(
-        59,
-        Math.max(0, Number(event.target.value) || 0)
-      );
+    (value: number | null) => {
+      const minutes = value ?? 0;
       setMinutesPart(minutes);
       setValue("totalHours", hoursPart + minutes / 60, {
         shouldValidate: true,
@@ -98,31 +102,22 @@ export function ProductForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label>Tempo total de impressão</Label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Input
-                id="totalHoursPart"
-                min={0}
-                onChange={handleHoursChange}
-                step="1"
-                type="number"
-                value={hoursPart}
-              />
-              <span className="text-muted-foreground text-xs">Horas</span>
-            </div>
-            <div className="flex-1">
-              <Input
-                id="totalMinutesPart"
-                max={59}
-                min={0}
-                onChange={handleMinutesChange}
-                step="1"
-                type="number"
-                value={minutesPart}
-              />
-              <span className="text-muted-foreground text-xs">Minutos</span>
-            </div>
+          <Label htmlFor="totalHoursPart">Tempo total de impressão</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <NumberInput
+              id="totalHoursPart"
+              onValueChange={handleHoursChange}
+              suffix="h"
+              value={hoursPart}
+            />
+            <NumberInput
+              aria-label="Minutos"
+              id="totalMinutesPart"
+              max={59}
+              onValueChange={handleMinutesChange}
+              suffix="min"
+              value={minutesPart}
+            />
           </div>
           <p className="text-muted-foreground text-xs">
             Total: {hoursPart}h{minutesPart.toString().padStart(2, "0")}min
@@ -130,20 +125,39 @@ export function ProductForm({
           <FieldError message={errors.totalHours?.message} />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="salePriceOverride">
-            Preço de venda (deixe em branco pra usar o sugerido)
-          </Label>
-          <Input
-            id="salePriceOverride"
-            step="0.01"
-            type="number"
-            {...register("salePriceOverride", {
-              setValueAs: (value) =>
-                value === "" || value === null ? null : Number(value),
-            })}
-          />
-          <FieldError message={errors.salePriceOverride?.message} />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="quantity">Quantidade</Label>
+            <NumberField
+              control={control}
+              id="quantity"
+              max={9999}
+              name="quantity"
+              suffix="un"
+            />
+            <p className="text-muted-foreground text-xs">
+              Gramas e tempo acima são por peça
+            </p>
+            <FieldError message={errors.quantity?.message} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="salePriceOverride">Preço por unidade</Label>
+            <NumberField
+              control={control}
+              decimals={2}
+              fixed
+              id="salePriceOverride"
+              name="salePriceOverride"
+              nullable
+              placeholder="Sugerido"
+              prefix="R$"
+            />
+            <p className="text-muted-foreground text-xs">
+              Vazio usa o preço sugerido
+            </p>
+            <FieldError message={errors.salePriceOverride?.message} />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">

@@ -53,19 +53,27 @@ export function ProductDetailDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">
-                Horas de impressão
+                Horas de impressão (lote)
               </span>
-              <p className="text-sm">{formatDuration(product.totalHours)}</p>
+              <p className="text-sm">
+                {formatDuration(product.totalHours * product.quantity)}
+              </p>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-muted-foreground text-xs">Quantidade</span>
+              <p className="text-sm">{product.quantity} un</p>
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">
-                Total de filamento
+                Total de filamento (lote)
               </span>
-              <p className="text-sm">{formatWeight(product.totalFilament)}</p>
+              <p className="text-sm">
+                {formatWeight(product.totalFilament * product.quantity)}
+              </p>
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">
-                Custo de produção
+                Custo real do lote
               </span>
               <p className="text-sm">{formatCurrency(product.costPrice)}</p>
             </div>
@@ -85,11 +93,17 @@ export function ProductDetailDialog({
                 {formatCurrency(product.salePrice)}
               </p>
             </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-muted-foreground text-xs">
+                Preço por unidade
+              </span>
+              <p className="text-sm">{formatCurrency(product.unitSalePrice)}</p>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <span className="text-muted-foreground text-xs">
-              Filamentos usados
+              Filamentos usados (por peça)
             </span>
             {product.filaments.length ? (
               <ul className="flex flex-col gap-2">

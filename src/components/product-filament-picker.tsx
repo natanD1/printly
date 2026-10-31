@@ -5,8 +5,8 @@ import type { MouseEvent } from "react";
 import { useCallback } from "react";
 import { type Control, useFieldArray, useFormContext } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { NumberField } from "@/components/number-field";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { ProductSchema } from "@/schemas/product-schema";
@@ -24,7 +24,7 @@ function ProductFilamentRow({
   onRemove,
 }: ProductFilamentRowProps) {
   const {
-    register,
+    control,
     formState: { errors },
   } = useFormContext<ProductSchema>();
 
@@ -44,14 +44,13 @@ function ProductFilamentRow({
         </span>
       </div>
 
-      <div className="w-28">
-        <Input
-          placeholder="Gramas"
-          step="0.01"
-          type="number"
-          {...register(`filaments.${index}.gramsUsed` as const, {
-            valueAsNumber: true,
-          })}
+      <div className="w-32">
+        <NumberField
+          aria-label={`Gramas usadas de ${filament.name}`}
+          control={control}
+          decimals={2}
+          name={`filaments.${index}.gramsUsed`}
+          suffix="g"
         />
         <FieldError message={errors.filaments?.[index]?.gramsUsed?.message} />
       </div>

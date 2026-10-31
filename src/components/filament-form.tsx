@@ -5,6 +5,7 @@ import type { ChangeEvent, MouseEvent } from "react";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { NumberField } from "@/components/number-field";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ export function FilamentForm({
   const { filamentTypes } = useFilamentTypes();
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
@@ -187,26 +189,31 @@ export function FilamentForm({
         <FieldError message={errors.colorHex?.message} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="weight">Peso (kg)</Label>
-        <Input
-          id="weight"
-          step="0.01"
-          type="number"
-          {...register("weight", { valueAsNumber: true })}
-        />
-        <FieldError message={errors.weight?.message} />
-      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="weight">Peso</Label>
+          <NumberField
+            control={control}
+            decimals={3}
+            id="weight"
+            name="weight"
+            suffix="kg"
+          />
+          <FieldError message={errors.weight?.message} />
+        </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filamentPrice">Preço pago</Label>
-        <Input
-          id="filamentPrice"
-          step="0.01"
-          type="number"
-          {...register("filamentPrice", { valueAsNumber: true })}
-        />
-        <FieldError message={errors.filamentPrice?.message} />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="filamentPrice">Preço pago</Label>
+          <NumberField
+            control={control}
+            decimals={2}
+            fixed
+            id="filamentPrice"
+            name="filamentPrice"
+            prefix="R$"
+          />
+          <FieldError message={errors.filamentPrice?.message} />
+        </div>
       </div>
 
       <div className="flex justify-end gap-2">
