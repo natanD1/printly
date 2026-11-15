@@ -196,12 +196,13 @@ Todo hook de leitura de lista (`useFilaments`, `useProducts`, `useInviteCodes`) 
 
 ## Cálculo automático de preço (produtos)
 
-`Product.costPrice`/`salePrice` **não são digitados** — o backend calcula sozinho a cada `POST`/`PUT /products` (`ProductPricingCalculator`, `Printly.Application`). Gramas e horas do produto são **por peça**; `quantity` (padrão 1) multiplica o lote:
+`Product.costPrice`/`salePrice` **não são digitados** — o backend calcula sozinho a cada `POST`/`PUT /products` (`ProductPricingCalculator`, `Printly.Application`). Gramas e horas do produto são **por impressão** (mesa), exatamente como o fatiador mostra; `piecesPerPrint` (peças por mesa, padrão 1) e `quantity` (total de peças, padrão 1) definem quantas impressões o lote exige, de forma **proporcional** (sem arredondar mesa parcial: 12 peças com 5 por mesa = 2,4 impressões). O fator fica em `Product.PrintRuns` (backend):
 
 ```
-material      = Σ (gramsUsed × qtd / 1000) × filament.filamentPrice
-energia       = (averagePowerWatts / 1000) × totalHours × qtd × kwhPrice
-depreciação   = depreciationEnabled ? printerValue / printerLifespanHours × totalHours × qtd : 0
+printRuns     = quantity / piecesPerPrint
+material      = Σ (gramsUsed × printRuns / 1000) × filament.filamentPrice
+energia       = (averagePowerWatts / 1000) × totalHours × printRuns × kwhPrice
+depreciação   = depreciationEnabled ? printerValue / printerLifespanHours × totalHours × printRuns : 0
 manutenção    = maintenanceEnabled (e depreciação ligada) ? depreciação × maintenancePercentage / 100 : 0
 falha         = failureEnabled ? (material + energia + depreciação + manutenção) × failureRatePercentage / 100 : 0
 costPrice     = material + energia + depreciação + manutenção + falha        (custo real do lote)
@@ -210,7 +211,7 @@ salePrice     = salePriceOverride × qtd (se enviado) senão suggestedSalePrice 
 unitSalePrice = salePrice / qtd
 ```
 
-`settings` vem de `UserSettings` (backend, 1:1 por usuário, tela `/configuracoes`). Depreciação, manutenção e perda por falha são **opcionais, cada uma com liga/desliga** (`depreciationEnabled`, `maintenanceEnabled`, `failureEnabled`, desligados por padrão — então produtos antigos mantêm o mesmo custo). Mão de obra ainda não existe. O front nunca reproduz essa conta — só manda `totalHours`, `quantity`, os filamentos usados (`filamentId` + `gramsUsed`, por peça) e, opcionalmente, `salePriceOverride` (**preço por unidade**; `0`/vazio vira `null` no submit pra usar o sugerido). `ProductDto`/`Product` (`src/types/product.ts`) trazem `costPrice`, `salePrice` (total do lote, usado no faturamento da home), `unitSalePrice` e `suggestedSalePrice` (sempre recalculado com a margem *atual*). O estoque de filamento é descontado em `gramsUsed × quantity`.
+`settings` vem de `UserSettings` (backend, 1:1 por usuário, tela `/configuracoes`). Depreciação, manutenção e perda por falha são **opcionais, cada uma com liga/desliga** (`depreciationEnabled`, `maintenanceEnabled`, `failureEnabled`, desligados por padrão). Mão de obra ainda não existe. O front nunca reproduz essa conta — só manda `totalHours`, `piecesPerPrint`, `quantity`, os filamentos usados (`filamentId` + `gramsUsed`, por impressão) e, opcionalmente, `salePriceOverride` (**preço por unidade**; `0`/vazio vira `null` no submit pra usar o sugerido). `ProductDto`/`Product` (`src/types/product.ts`) trazem `costPrice`, `salePrice` (total do lote, usado no faturamento da home), `unitSalePrice`, `suggestedSalePrice` (sempre recalculado com a margem *atual*) e os totais do lote já calculados — `batchHours` (`totalHours × printRuns`) e `batchFilament` (`totalFilament × printRuns`). Use esses dois pra exibir/somar horas e gramas do lote; nunca multiplique `totalHours`/`totalFilament` por `quantity` no front. O estoque de filamento é descontado em `gramsUsed × printRuns`. Produtos criados antes desse campo têm `piecesPerPrint = 1` (default da coluna), então o custo deles não mudou.
 
 ## Gotchas de formulário (react-hook-form + campos numéricos/nativos)
 

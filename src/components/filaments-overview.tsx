@@ -58,13 +58,7 @@ export function FilamentsOverview() {
 
     return products
       .filter((product) => isSameMonth(product.createdAt, now))
-      .reduce(
-        (total, product) =>
-          total +
-          product.filaments.reduce((sum, f) => sum + f.gramsUsed, 0) *
-            product.quantity,
-        0
-      );
+      .reduce((total, product) => total + product.batchFilament, 0);
   }, [products]);
 
   return (

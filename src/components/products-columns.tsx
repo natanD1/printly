@@ -26,9 +26,8 @@ export function buildProductsColumns(
       header: "Custo de produção",
     },
     {
-      accessorKey: "totalFilament",
-      cell: ({ row }) =>
-        formatWeight(row.original.totalFilament * row.original.quantity),
+      accessorKey: "batchFilament",
+      cell: ({ row }) => formatWeight(row.original.batchFilament),
       header: "Total de filamento",
     },
     {

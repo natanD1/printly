@@ -32,7 +32,7 @@ export function HomeOverview() {
         0
       ),
       hoursThisMonth: productsThisMonth.reduce(
-        (total, product) => total + product.totalHours * product.quantity,
+        (total, product) => total + product.batchHours,
         0
       ),
       productsMonthly: productsThisMonth.reduce(

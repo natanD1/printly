@@ -55,21 +55,19 @@ export function ProductDetailDialog({
               <span className="text-muted-foreground text-xs">
                 Horas de impressão (lote)
               </span>
-              <p className="text-sm">
-                {formatDuration(product.totalHours * product.quantity)}
-              </p>
+              <p className="text-sm">{formatDuration(product.batchHours)}</p>
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">Quantidade</span>
-              <p className="text-sm">{product.quantity} un</p>
+              <p className="text-sm">
+                {product.quantity} un ({product.piecesPerPrint} por impressão)
+              </p>
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">
                 Total de filamento (lote)
               </span>
-              <p className="text-sm">
-                {formatWeight(product.totalFilament * product.quantity)}
-              </p>
+              <p className="text-sm">{formatWeight(product.batchFilament)}</p>
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">
@@ -103,7 +101,7 @@ export function ProductDetailDialog({
 
           <div className="flex flex-col gap-1.5">
             <span className="text-muted-foreground text-xs">
-              Filamentos usados (por peça)
+              Filamentos usados (por impressão)
             </span>
             {product.filaments.length ? (
               <ul className="flex flex-col gap-2">
