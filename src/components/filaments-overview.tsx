@@ -10,7 +10,7 @@ import { TotalFilamentsCountIndicator } from "@/components/total-filaments-count
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFilaments } from "@/hooks/use-filaments";
 import { useProducts } from "@/hooks/use-products";
-import { isSameMonth } from "@/utils/date-filters";
+import { currentMonthRange, isSameMonth } from "@/utils/date-filters";
 
 const SKELETON_KEYS = [
   "skeleton-1",
@@ -31,7 +31,8 @@ export function FilamentsOverview() {
     isLoading,
     updateFilament,
   } = useFilaments();
-  const { products } = useProducts();
+  const [currentMonth] = useState(currentMonthRange);
+  const { products } = useProducts(currentMonth);
   const [search, setSearch] = useState("");
 
   const filteredFilaments = useMemo(() => {
@@ -58,13 +59,7 @@ export function FilamentsOverview() {
 
     return products
       .filter((product) => isSameMonth(product.createdAt, now))
-      .reduce(
-        (total, product) =>
-          total +
-          product.filaments.reduce((sum, f) => sum + f.gramsUsed, 0) *
-            product.quantity,
-        0
-      );
+      .reduce((total, product) => total + product.batchFilament, 0);
   }, [products]);
 
   return (

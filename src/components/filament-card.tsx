@@ -73,16 +73,7 @@ export function FilamentCard({
         filament={filament}
         onSubmit={handleUpdate}
         trigger={
-          <Card className="group/filament-card relative cursor-pointer transition-colors hover:bg-muted/50">
-            <Button
-              className="absolute top-2 right-2 opacity-0 transition-opacity group-hover/filament-card:opacity-100"
-              onClick={handleDeleteTriggerClick}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <Trash2 className="text-destructive" />
-              <span className="sr-only">Excluir filamento</span>
-            </Button>
+          <Card className="group/filament-card cursor-pointer transition-colors hover:bg-muted/50">
             <CardContent className="flex flex-col gap-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
@@ -99,7 +90,18 @@ export function FilamentCard({
                     </p>
                   </div>
                 </div>
-                <Badge variant="outline">{filament.type.name}</Badge>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Badge variant="outline">{filament.type.name}</Badge>
+                  <Button
+                    className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover/filament-card:opacity-100"
+                    onClick={handleDeleteTriggerClick}
+                    size="icon-xs"
+                    variant="ghost"
+                  >
+                    <Trash2 className="text-destructive" />
+                    <span className="sr-only">Excluir filamento</span>
+                  </Button>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -113,7 +115,10 @@ export function FilamentCard({
                   value={percentRemaining}
                 />
                 <span className="text-muted-foreground text-xs tabular-nums">
-                  {Math.round(percentRemaining)}%
+                  {filament.weight.toLocaleString("pt-BR", {
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  kg
                 </span>
               </div>
             </CardContent>

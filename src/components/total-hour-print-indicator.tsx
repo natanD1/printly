@@ -8,7 +8,13 @@ import {
 } from "@/components/ui/card";
 import { formatDuration } from "@/utils/format-duration";
 
-export function TotalHourPrintIndicator({ hours }: { hours: number }) {
+export function TotalHourPrintIndicator({
+  description,
+  hours,
+}: {
+  description: string;
+  hours: number;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -21,7 +27,7 @@ export function TotalHourPrintIndicator({ hours }: { hours: number }) {
         <p className="font-heading font-semibold text-3xl text-sky-500 dark:text-sky-400">
           {formatDuration(hours)}
         </p>
-        <CardDescription>Referente ao mês atual</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardContent>
     </Card>
   );

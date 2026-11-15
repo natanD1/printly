@@ -25,6 +25,7 @@ interface ProductFormProps {
 const EMPTY_VALUES: ProductSchema = {
   filaments: [],
   photo: null,
+  piecesPerPrint: 1,
   productName: "",
   quantity: 1,
   salePriceOverride: null,
@@ -102,7 +103,7 @@ export function ProductForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="totalHoursPart">Tempo total de impressão</Label>
+          <Label htmlFor="totalHoursPart">Tempo por impressão</Label>
           <div className="grid grid-cols-2 gap-2">
             <NumberInput
               id="totalHoursPart"
@@ -120,12 +121,28 @@ export function ProductForm({
             />
           </div>
           <p className="text-muted-foreground text-xs">
-            Total: {hoursPart}h{minutesPart.toString().padStart(2, "0")}min
+            {hoursPart}h{minutesPart.toString().padStart(2, "0")}min de uma
+            impressão, como o fatiador mostra
           </p>
           <FieldError message={errors.totalHours?.message} />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="piecesPerPrint">Peças por impressão</Label>
+            <NumberField
+              control={control}
+              id="piecesPerPrint"
+              max={9999}
+              name="piecesPerPrint"
+              suffix="un"
+            />
+            <p className="text-muted-foreground text-xs">
+              Quantas saem de uma mesa
+            </p>
+            <FieldError message={errors.piecesPerPrint?.message} />
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="quantity">Quantidade</Label>
             <NumberField
@@ -136,28 +153,28 @@ export function ProductForm({
               suffix="un"
             />
             <p className="text-muted-foreground text-xs">
-              Gramas e tempo acima são por peça
+              Total de peças a produzir
             </p>
             <FieldError message={errors.quantity?.message} />
           </div>
+        </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="salePriceOverride">Preço por unidade</Label>
-            <NumberField
-              control={control}
-              decimals={2}
-              fixed
-              id="salePriceOverride"
-              name="salePriceOverride"
-              nullable
-              placeholder="Sugerido"
-              prefix="R$"
-            />
-            <p className="text-muted-foreground text-xs">
-              Vazio usa o preço sugerido
-            </p>
-            <FieldError message={errors.salePriceOverride?.message} />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="salePriceOverride">Preço por unidade</Label>
+          <NumberField
+            control={control}
+            decimals={2}
+            fixed
+            id="salePriceOverride"
+            name="salePriceOverride"
+            nullable
+            placeholder="Sugerido"
+            prefix="R$"
+          />
+          <p className="text-muted-foreground text-xs">
+            Vazio usa o preço sugerido
+          </p>
+          <FieldError message={errors.salePriceOverride?.message} />
         </div>
 
         <div className="flex flex-col gap-1.5">

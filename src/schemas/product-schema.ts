@@ -8,6 +8,10 @@ export const productFilamentEntrySchema = z.object({
 export const productSchema = z.object({
   filaments: z.array(productFilamentEntrySchema),
   photo: z.instanceof(File).nullable(),
+  piecesPerPrint: z
+    .number()
+    .int("Peças por impressão deve ser inteiro")
+    .min(1, "Mínimo 1"),
   productName: z.string().min(1, "Nome é obrigatório"),
   quantity: z.number().int("Quantidade deve ser inteira").min(1, "Mínimo 1"),
   salePriceOverride: z

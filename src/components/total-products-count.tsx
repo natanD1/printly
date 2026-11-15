@@ -7,7 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function TotalProductsCount({ count }: { count: number }) {
+export function TotalProductsCount({
+  count,
+  description,
+}: {
+  count: number;
+  description: string;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -20,7 +26,7 @@ export function TotalProductsCount({ count }: { count: number }) {
         <p className="font-heading font-semibold text-3xl text-violet-500 dark:text-violet-400">
           {count.toLocaleString("pt-BR")}
         </p>
-        <CardDescription>Referente ao mês atual</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardContent>
     </Card>
   );

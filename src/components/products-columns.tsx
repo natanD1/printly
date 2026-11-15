@@ -6,6 +6,7 @@ import type { ProductSchema } from "@/schemas/product-schema";
 import type { Product } from "@/types/product";
 import { formatCurrency } from "@/utils/format-currency";
 import { formatWeight } from "@/utils/format-weight";
+import { parseBrazilianDate } from "@/utils/parse-brazilian-date";
 
 export function buildProductsColumns(
   onDelete: (id: string) => Promise<void>,
@@ -17,6 +18,14 @@ export function buildProductsColumns(
       header: "Nome do produto",
     },
     {
+      // Timestamp como valor: ordena por data, não pela string "dd/MM/yyyy".
+      accessorFn: (product) => parseBrazilianDate(product.createdAt).getTime(),
+      cell: ({ row }) =>
+        parseBrazilianDate(row.original.createdAt).toLocaleDateString("pt-BR"),
+      header: "Cadastrado em",
+      id: "createdAt",
+    },
+    {
       accessorKey: "quantity",
       header: "Qtd",
     },
@@ -26,9 +35,8 @@ export function buildProductsColumns(
       header: "Custo de produção",
     },
     {
-      accessorKey: "totalFilament",
-      cell: ({ row }) =>
-        formatWeight(row.original.totalFilament * row.original.quantity),
+      accessorKey: "batchFilament",
+      cell: ({ row }) => formatWeight(row.original.batchFilament),
       header: "Total de filamento",
     },
     {

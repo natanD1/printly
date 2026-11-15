@@ -8,6 +8,7 @@ export function buildProductFormData(data: ProductSchema): FormData {
   formData.append("ProductName", data.productName);
   formData.append("TotalHours", String(data.totalHours));
   formData.append("Quantity", String(data.quantity));
+  formData.append("PiecesPerPrint", String(data.piecesPerPrint));
 
   if (data.salePriceOverride !== null) {
     formData.append("SalePriceOverride", String(data.salePriceOverride));
@@ -28,8 +29,11 @@ export function buildProductFormData(data: ProductSchema): FormData {
   return formData;
 }
 
-export async function getProductsRequest(): Promise<Product[]> {
-  const response = await api.get<Product[]>("/products");
+export async function getProductsRequest(params: {
+  from: string;
+  to: string;
+}): Promise<Product[]> {
+  const response = await api.get<Product[]>("/products", { params });
 
   return response.data;
 }

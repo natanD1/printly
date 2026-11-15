@@ -101,6 +101,7 @@ export function ProductFormDialog({
                       gramsUsed: f.gramsUsed,
                     })),
                     photo: null,
+                    piecesPerPrint: product.piecesPerPrint,
                     productName: product.productName,
                     quantity: product.quantity,
                     salePriceOverride: null,
