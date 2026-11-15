@@ -12,6 +12,7 @@ export const productSchema = z.object({
     .number()
     .int("Peças por impressão deve ser inteiro")
     .min(1, "Mínimo 1"),
+  printerId: z.string().min(1, "Selecione uma impressora"),
   productName: z.string().min(1, "Nome é obrigatório"),
   quantity: z.number().int("Quantidade deve ser inteira").min(1, "Mínimo 1"),
   salePriceOverride: z

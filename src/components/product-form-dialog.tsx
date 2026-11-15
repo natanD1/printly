@@ -102,6 +102,7 @@ export function ProductFormDialog({
                     })),
                     photo: null,
                     piecesPerPrint: product.piecesPerPrint,
+                    printerId: product.printerId ?? "",
                     productName: product.productName,
                     quantity: product.quantity,
                     salePriceOverride: null,

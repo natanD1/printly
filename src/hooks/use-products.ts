@@ -21,7 +21,7 @@ const PRODUCTS_KEY = "products";
 type ProductsKey = readonly [typeof PRODUCTS_KEY, string, string];
 
 /** Casa qualquer cache de produtos, de qualquer período. */
-function isProductsKey(key: unknown): boolean {
+export function isProductsKey(key: unknown): boolean {
   return Array.isArray(key) && key[0] === PRODUCTS_KEY;
 }
 

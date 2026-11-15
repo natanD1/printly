@@ -16,6 +16,10 @@ export interface Product {
   filaments: ProductFilamentUsage[];
   id: string;
   piecesPerPrint: number;
+  /** Nulo só em produtos anteriores ao módulo de impressoras (editar exige escolher uma). */
+  printerId: string | null;
+  /** Apelido ou "Marca Modelo" da impressora usada no cálculo. */
+  printerName: string | null;
   productName: string;
   productPhoto: string | null;
   quantity: number;
