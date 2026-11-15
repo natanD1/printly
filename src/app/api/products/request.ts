@@ -9,6 +9,7 @@ export function buildProductFormData(data: ProductSchema): FormData {
   formData.append("TotalHours", String(data.totalHours));
   formData.append("Quantity", String(data.quantity));
   formData.append("PiecesPerPrint", String(data.piecesPerPrint));
+  formData.append("PrinterId", data.printerId);
 
   if (data.salePriceOverride !== null) {
     formData.append("SalePriceOverride", String(data.salePriceOverride));

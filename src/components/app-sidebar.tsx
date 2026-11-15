@@ -8,7 +8,9 @@ import {
   LogOut,
   MessageSquare,
   Palette,
+  Printer3d,
   Settings,
+  Tags,
   Ticket,
 } from "lucide-react";
 import Image from "next/image";
@@ -33,12 +35,19 @@ import { Separator } from "./ui/separator";
 const generalNavItems = [
   { icon: Home, title: "Home", url: "/home" },
   { icon: Box, title: "Estoque", url: "/estoque" },
+  { icon: Printer3d, title: "Impressoras", url: "/impressoras" },
 ];
 
 const adminNavItems = [
   { icon: Ticket, title: "Convites", url: "/convites" },
   { icon: Palette, title: "Marcas de Filamento", url: "/marcas-filamento" },
   { icon: Layers, title: "Tipos de Filamento", url: "/tipos-filamento" },
+  { icon: Tags, title: "Marcas de Impressora", url: "/marcas-impressora" },
+  {
+    icon: Printer3d,
+    title: "Modelos de Impressora",
+    url: "/modelos-impressora",
+  },
   { icon: MessageSquare, title: "Feedbacks", url: "/feedbacks" },
 ];
 

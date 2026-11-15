@@ -64,6 +64,10 @@ export function ProductDetailDialog({
               </p>
             </div>
             <div className="flex flex-col gap-0.5">
+              <span className="text-muted-foreground text-xs">Impressora</span>
+              <p className="text-sm">{product.printerName ?? "Não definida"}</p>
+            </div>
+            <div className="flex flex-col gap-0.5">
               <span className="text-muted-foreground text-xs">
                 Total de filamento (lote)
               </span>

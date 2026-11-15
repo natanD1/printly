@@ -4,10 +4,13 @@ import { AUTH_COOKIE_NAME } from "@/lib/auth-cookie";
 const protectedRoutes = [
   "/home",
   "/estoque",
+  "/impressoras",
   "/configuracoes",
   "/convites",
   "/marcas-filamento",
   "/tipos-filamento",
+  "/marcas-impressora",
+  "/modelos-impressora",
   "/feedbacks",
 ];
 const publicRoutes = ["/auth"];

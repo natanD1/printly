@@ -1,18 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import type { ChangeEvent } from "react";
 import { useCallback, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
 import { NumberField } from "@/components/number-field";
 import { NumberInput } from "@/components/number-input";
+import { OptionChips } from "@/components/option-chips";
 import { ProductFilamentPicker } from "@/components/product-filament-picker";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFilaments } from "@/hooks/use-filaments";
+import { usePrinters } from "@/hooks/use-printers";
 import { type ProductSchema, productSchema } from "@/schemas/product-schema";
 
 interface ProductFormProps {
@@ -26,6 +29,7 @@ const EMPTY_VALUES: ProductSchema = {
   filaments: [],
   photo: null,
   piecesPerPrint: 1,
+  printerId: "",
   productName: "",
   quantity: 1,
   salePriceOverride: null,
@@ -39,6 +43,7 @@ export function ProductForm({
   submitLabel,
 }: ProductFormProps) {
   const { filaments } = useFilaments();
+  const { isLoading: isLoadingPrinters, printers } = usePrinters();
   const form = useForm<ProductSchema>({
     defaultValues: defaultValues ?? EMPTY_VALUES,
     resolver: zodResolver(productSchema),
@@ -48,8 +53,21 @@ export function ProductForm({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = form;
+
+  const printerId = watch("printerId");
+  const printerOptions = printers.map((printer) => ({
+    id: printer.id,
+    image: printer.modelImage,
+    label: printer.displayName,
+  }));
+
+  const handleSelectPrinter = useCallback(
+    (id: string) => setValue("printerId", id, { shouldValidate: true }),
+    [setValue]
+  );
 
   const initialTotalHours =
     defaultValues?.totalHours ?? EMPTY_VALUES.totalHours;
@@ -100,6 +118,33 @@ export function ProductForm({
           <Label htmlFor="productName">Nome</Label>
           <Input id="productName" {...register("productName")} />
           <FieldError message={errors.productName?.message} />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label>Impressora</Label>
+          {printers.length || isLoadingPrinters ? (
+            <OptionChips
+              emptyMessage="Carregando impressoras..."
+              onSelect={handleSelectPrinter}
+              options={printerOptions}
+              value={printerId}
+            />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              Nenhuma impressora cadastrada.{" "}
+              <Link
+                className="underline underline-offset-2"
+                href="/impressoras"
+              >
+                Cadastre uma
+              </Link>{" "}
+              pra calcular o custo.
+            </p>
+          )}
+          <p className="text-muted-foreground text-xs">
+            Potência, desgaste e margem vêm dela
+          </p>
+          <FieldError message={errors.printerId?.message} />
         </div>
 
         <div className="flex flex-col gap-1.5">
