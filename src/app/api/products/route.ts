@@ -6,11 +6,24 @@ import type { Product } from "@/types/product";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(): Promise<NextResponse> {
+const PERIOD_PARAMS = ["from", "to"] as const;
+
+export async function GET(request: Request): Promise<NextResponse> {
   const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+  const { searchParams } = new URL(request.url);
+  const query = new URLSearchParams();
+
+  for (const key of PERIOD_PARAMS) {
+    const value = searchParams.get(key);
+    if (value) {
+      query.set(key, value);
+    }
+  }
+
+  const path = query.size ? `/products?${query}` : "/products";
 
   try {
-    const products = await apiFetch<Product[]>("/products", {
+    const products = await apiFetch<Product[]>(path, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

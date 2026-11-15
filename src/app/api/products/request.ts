@@ -29,8 +29,11 @@ export function buildProductFormData(data: ProductSchema): FormData {
   return formData;
 }
 
-export async function getProductsRequest(): Promise<Product[]> {
-  const response = await api.get<Product[]>("/products");
+export async function getProductsRequest(params: {
+  from: string;
+  to: string;
+}): Promise<Product[]> {
+  const response = await api.get<Product[]>("/products", { params });
 
   return response.data;
 }

@@ -1,28 +1,29 @@
 "use client";
 
-import { Calendar, Plus, RefreshCw, Search } from "lucide-react";
+import { Plus, RefreshCw, Search } from "lucide-react";
 import { type ChangeEvent, useCallback } from "react";
 import { ProductFormDialog } from "@/components/product-form-dialog";
+import { ProductsPeriodFilter } from "@/components/products-period-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { ProductSchema } from "@/schemas/product-schema";
+import type { DateRange } from "@/utils/date-filters";
 
 interface ProductsToolbarProps {
   onCreate: (data: ProductSchema) => Promise<void>;
+  onRangeChange: (range: DateRange) => void;
   onRefresh: () => void;
   onSearchChange: (value: string) => void;
+  range: DateRange;
   search: string;
 }
 
 export function ProductsToolbar({
   onCreate,
+  onRangeChange,
   onRefresh,
   onSearchChange,
+  range,
   search,
 }: ProductsToolbarProps) {
   const handleSearchChange = useCallback(
@@ -45,24 +46,7 @@ export function ProductsToolbar({
       </div>
 
       <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                aria-disabled="true"
-                className="cursor-not-allowed opacity-50"
-                size="lg"
-                variant="outline"
-              >
-                <Calendar />
-                Período
-              </Button>
-            }
-          />
-          <TooltipContent>
-            <p>Teste</p>
-          </TooltipContent>
-        </Tooltip>
+        <ProductsPeriodFilter onChange={onRangeChange} value={range} />
         <Button onClick={onRefresh} size="lg" variant="outline">
           <RefreshCw />
           Atualizar

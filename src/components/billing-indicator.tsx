@@ -8,7 +8,13 @@ import {
 } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/format-currency";
 
-export function BillingIndicator({ value }: { value: number }) {
+export function BillingIndicator({
+  description,
+  value,
+}: {
+  description: string;
+  value: number;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -21,7 +27,7 @@ export function BillingIndicator({ value }: { value: number }) {
         <p className="font-heading font-semibold text-3xl text-emerald-500 dark:text-emerald-400">
           {formatCurrency(value)}
         </p>
-        <CardDescription>Referente ao mês atual</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardContent>
     </Card>
   );

@@ -7,14 +7,17 @@ import { ProductsToolbar } from "@/components/products-toolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { Product } from "@/types/product";
+import type { DateRange } from "@/utils/date-filters";
 
 interface ProductsTableProps {
   createProduct: (data: ProductSchema) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   error: string | null;
   isLoading: boolean;
+  onRangeChange: (range: DateRange) => void;
   onRefresh: () => void;
   products: Product[];
+  range: DateRange;
   updateProduct: (id: string, data: ProductSchema) => Promise<void>;
 }
 
@@ -23,8 +26,10 @@ export function ProductsTable({
   deleteProduct,
   error,
   isLoading,
+  onRangeChange,
   onRefresh,
   products,
+  range,
   updateProduct,
 }: ProductsTableProps) {
   const [search, setSearch] = useState("");
@@ -50,8 +55,10 @@ export function ProductsTable({
     <div className="flex flex-col gap-4">
       <ProductsToolbar
         onCreate={createProduct}
+        onRangeChange={onRangeChange}
         onRefresh={onRefresh}
         onSearchChange={setSearch}
+        range={range}
         search={search}
       />
 

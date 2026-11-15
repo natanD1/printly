@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useCallback } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import {
   deleteProductRequest,
   updateProductRequest,
@@ -14,8 +14,20 @@ import {
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { ApiErrorResponse } from "@/types/auth";
 import type { Product } from "@/types/product";
+import { type DateRange, toApiParams } from "@/utils/date-filters";
 
 const PRODUCTS_KEY = "products";
+
+type ProductsKey = readonly [typeof PRODUCTS_KEY, string, string];
+
+/** Casa qualquer cache de produtos, de qualquer período. */
+function isProductsKey(key: unknown): boolean {
+  return Array.isArray(key) && key[0] === PRODUCTS_KEY;
+}
+
+function fetchProducts([, from, to]: ProductsKey): Promise<Product[]> {
+  return getProductsRequest({ from, to });
+}
 
 function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
@@ -25,33 +37,39 @@ function getErrorMessage(error: unknown): string {
   return "Erro inesperado";
 }
 
-export function useProducts() {
+export function useProducts(range: DateRange) {
+  const { from, to } = toApiParams(range);
+  const { mutate: mutateAll } = useSWRConfig();
   const {
     data,
     error,
     isLoading,
     mutate: mutateProducts,
-  } = useSWR<Product[]>(PRODUCTS_KEY, getProductsRequest);
+  } = useSWR<Product[], unknown, ProductsKey>(
+    [PRODUCTS_KEY, from, to],
+    fetchProducts,
+    { keepPreviousData: true }
+  );
 
   const createProduct = useCallback(
     async (formData: ProductSchema) => {
       try {
-        const product = await createProductRequest(formData);
-        await mutateProducts((current) => [product, ...(current ?? [])], {
-          revalidate: false,
-        });
+        await createProductRequest(formData);
+        // O produto novo pode ou não cair no período de cada cache: revalida todos.
+        await mutateAll(isProductsKey);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutateProducts]
+    [mutateAll]
   );
 
   const updateProduct = useCallback(
     async (id: string, formData: ProductSchema) => {
       try {
         const product = await updateProductRequest(id, formData);
-        await mutateProducts(
+        await mutateAll<Product[]>(
+          isProductsKey,
           (current) =>
             current?.map((item) => (item.id === id ? product : item)),
           { revalidate: false }
@@ -60,14 +78,15 @@ export function useProducts() {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutateProducts]
+    [mutateAll]
   );
 
   const deleteProduct = useCallback(
     async (id: string) => {
       try {
         await deleteProductRequest(id);
-        await mutateProducts(
+        await mutateAll<Product[]>(
+          isProductsKey,
           (current) => current?.filter((item) => item.id !== id),
           { revalidate: false }
         );
@@ -75,7 +94,7 @@ export function useProducts() {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutateProducts]
+    [mutateAll]
   );
 
   return {
