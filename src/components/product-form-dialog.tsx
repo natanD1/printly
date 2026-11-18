@@ -3,13 +3,8 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { ModalCommunication } from "@/components/modal-communication";
 import { ProductForm } from "@/components/product-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { Product } from "@/types/product";
 
@@ -79,19 +74,14 @@ export function ProductFormDialog({
 
   return (
     <>
-      <Dialog onOpenChange={setOpen} open={open}>
+      <Sheet onOpenChange={setOpen} open={open}>
         {trigger ? (
-          <DialogTrigger
-            nativeButton={triggerIsNativeButton}
-            render={trigger}
-          />
+          <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
         ) : null}
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar produto" : "Adicionar produto"}
-            </DialogTitle>
-          </DialogHeader>
+        <SideSheetContent
+          size="wide"
+          title={isEditing ? "Editar produto" : "Adicionar produto"}
+        >
           <ProductForm
             defaultValues={
               product
@@ -114,8 +104,8 @@ export function ProductFormDialog({
             onSubmit={handleSubmit}
             submitLabel={isEditing ? "Salvar" : "Adicionar"}
           />
-        </DialogContent>
-      </Dialog>
+        </SideSheetContent>
+      </Sheet>
 
       <ModalCommunication
         description={resultModal?.description}

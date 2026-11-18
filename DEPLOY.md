@@ -148,33 +148,21 @@ docker compose logs -f caddy
 
 A imagem de runtime do backend só tem o binário publicado (sem `dotnet-ef`). Roda um container temporário com o SDK, na mesma rede do compose, falando com o `mysql` direto pelo nome interno — sem expor porta nenhuma:
 
+Os dois scripts ficam em `deploy/` neste repo. Copia uma vez pra `~/printly` (o front já está clonado na VPS):
+
 ```bash
-cat > ~/printly/migrate.sh << 'EOF'
-#!/bin/bash
-set -e
-dotnet tool install --global dotnet-ef
-export PATH="$PATH:/root/.dotnet/tools"
-dotnet restore Printly.sln
-dotnet ef database update \
-  --project src/Printly.Infrastructure \
-  --startup-project src/Printly.WebApi
-EOF
-
-source ~/printly/.env
-
-docker run --rm -it \
-  --network printly_default \
-  -v ~/printly/back:/src \
-  -v ~/printly/migrate.sh:/migrate.sh \
-  -w /src \
-  -e ConnectionStrings__DefaultConnection="Server=mysql;Port=3306;Database=printly_db;User=root;Password=${MYSQL_ROOT_PASSWORD};" \
-  -e Jwt__Secret="${JWT_SECRET}" \
-  -e Jwt__Issuer='Printly.WebApi' \
-  -e Jwt__Audience='Printly.Client' \
-  -e Jwt__ExpirationMinutes='60' \
-  mcr.microsoft.com/dotnet/sdk:8.0 \
-  bash /migrate.sh
+cp ~/printly/front/deploy/migrate.sh ~/printly/front/deploy/run-migrate.sh ~/printly/
+chmod +x ~/printly/run-migrate.sh
 ```
+
+Pra aplicar as migrations (depois do `git pull` no `back`):
+
+```bash
+~/printly/run-migrate.sh
+```
+
+- `migrate.sh` roda dentro do container e fixa `dotnet-ef` em `8.0.11` (versão do EF Core do backend). Sem `--version`, o `dotnet tool install` baixa a mais nova, que não instala no SDK 8 (`Settings file 'DotnetToolSettings.xml' was not found in the package`).
+- `run-migrate.sh` monta a connection string em pedaços curtos: comando longo colado no terminal quebra a linha no meio (`bad substitution`).
 
 ### Primeiro convite / primeiro admin
 

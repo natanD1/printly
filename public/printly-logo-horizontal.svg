@@ -1,0 +1,45 @@
+<svg
+  aria-labelledby="t"
+  height="256"
+  role="img"
+  viewBox="0 0 916 256"
+  width="916"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <title id="t">Printly logo</title>
+  <g transform="translate(0.0 0.0) scale(1.0000)">
+    <path d="M30 40L128 90L86 138Z" fill="#8F76FF" />
+    <path d="M30 40L86 138L24 130Z" fill="#6C4CF5" />
+    <path d="M128 90L128 132L86 138Z" fill="#8F76FF" />
+    <path d="M24 130L86 138L36 190Z" fill="#6C4CF5" />
+    <path d="M86 138L128 132L128 174Z" fill="#8F76FF" />
+    <path d="M86 138L128 174L36 190Z" fill="#5236DC" />
+    <path d="M36 190L128 174L80 232Z" fill="#6C4CF5" />
+    <path d="M80 232L128 174L128 244Z" fill="#5236DC" />
+    <path d="M226 40L128 90L170 138Z" fill="#6C4CF5" />
+    <path d="M226 40L170 138L232 130Z" fill="#5236DC" />
+    <path d="M128 90L128 132L170 138Z" fill="#6C4CF5" />
+    <path d="M232 130L170 138L220 190Z" fill="#3F25BF" />
+    <path d="M170 138L128 132L128 174Z" fill="#6C4CF5" />
+    <path d="M170 138L128 174L220 190Z" fill="#3F25BF" />
+    <path d="M220 190L128 174L176 232Z" fill="#5236DC" />
+    <path d="M176 232L128 174L128 244Z" fill="#3F25BF" />
+    <circle cx="86" cy="138" fill="#fff" r="32" />
+    <circle cx="91" cy="138" fill="#1E1B4B" r="13" />
+    <circle cx="170" cy="138" fill="#fff" r="32" />
+    <circle cx="175" cy="138" fill="#1E1B4B" r="13" />
+    <path d="M108 172H128V202Z" fill="#FFD45C" />
+    <path d="M128 172H148L128 202Z" fill="#F2A41E" />
+  </g>
+  <g transform="translate(299.5 200.0) scale(0.8600)">
+    <path
+      d="M0 -54V52M0 -50.0A50.0 50.0 0 1 1 50.0 0A50.0 50.0 0 0 1 0 -50.0M152 0V-50.0A50.0 50.0 0 0 1 202.0 -100M248.8 -100V0M300.8 -100V0M300.8 -50.0A50.0 50.0 0 0 1 400.8 -50.0V0M452.8 -140V-28A28 28 0 0 0 480.8 0H488.8M426.8 -100H492.8M539.6 -150V0M591.6 -100V-50.0A50.0 50.0 0 0 0 691.6 -50.0M691.6 -100V2.0A50.0 50.0 0 0 1 641.6 52H611.6"
+      fill="none"
+      stroke="#6C4CF5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="36"
+    />
+    <circle cx="248.8" cy="-138" fill="#FFC53D" r="22.32" />
+  </g>
+</svg>

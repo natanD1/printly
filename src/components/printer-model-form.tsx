@@ -6,10 +6,11 @@ import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
 import { OptionChips } from "@/components/option-chips";
+import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
-import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SheetClose } from "@/components/ui/sheet";
 import { usePrinterBrands } from "@/hooks/use-printer-brands";
 import {
   type PrinterModelSchema,
@@ -67,7 +68,7 @@ export function PrinterModelForm({
   );
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={submit}>
+    <form className="flex flex-1 flex-col gap-4" onSubmit={submit}>
       <div className="flex flex-col gap-1.5">
         <Label>Marca</Label>
         <OptionChips
@@ -91,10 +92,10 @@ export function PrinterModelForm({
           // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
           <img
             alt="Imagem atual do modelo"
-            className="h-16 w-16 rounded-lg border border-input object-contain"
-            height={64}
+            className="size-32 rounded-xl border border-input bg-muted object-contain p-2"
+            height={128}
             src={`data:image/png;base64,${existingImagePreview}`}
-            width={64}
+            width={128}
           />
         ) : null}
         <Input
@@ -105,14 +106,14 @@ export function PrinterModelForm({
         />
       </div>
 
-      <div className="flex justify-end gap-2">
-        <DialogClose render={<Button type="button" variant="outline" />}>
+      <SideSheetActions>
+        <SheetClose render={<Button type="button" variant="outline" />}>
           Cancelar
-        </DialogClose>
+        </SheetClose>
         <Button disabled={isSubmitting} type="submit">
           {submitLabel}
         </Button>
-      </div>
+      </SideSheetActions>
     </form>
   );
 }
