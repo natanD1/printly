@@ -15,6 +15,11 @@ export interface Product {
   createdAt: string;
   filaments: ProductFilamentUsage[];
   id: string;
+  /**
+   * `false` = orçamento: só calcula preço, não desconta estoque nem entra nos indicadores.
+   * `true` = produzido: filamento descontado e contabilizado. Produto novo nasce `false`.
+   */
+  isProduced: boolean;
   piecesPerPrint: number;
   /** Nulo só em produtos anteriores ao módulo de impressoras (editar exige escolher uma). */
   printerId: string | null;

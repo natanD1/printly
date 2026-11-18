@@ -21,24 +21,27 @@ export function HomeOverview() {
     fetchProducts,
     isLoading,
     products,
+    setProductProduced,
     updateProduct,
   } = useProducts(range);
 
   // A API já devolve só os produtos do período; aqui é só somar.
-  const { billing, hours, productsCount } = useMemo(
-    () => ({
-      billing: products.reduce(
+  // Orçamentos ficam de fora: só produto produzido conta nos indicadores.
+  const { billing, hours, productsCount } = useMemo(() => {
+    const produced = products.filter((product) => product.isProduced);
+
+    return {
+      billing: produced.reduce(
         (total, product) => total + product.salePrice,
         0
       ),
-      hours: products.reduce((total, product) => total + product.batchHours, 0),
-      productsCount: products.reduce(
+      hours: produced.reduce((total, product) => total + product.batchHours, 0),
+      productsCount: produced.reduce(
         (total, product) => total + product.quantity,
         0
       ),
-    }),
-    [products]
-  );
+    };
+  }, [products]);
 
   const periodDescription = isSameRange(range, currentMonthRange())
     ? "Referente ao mês atual"
@@ -67,6 +70,7 @@ export function HomeOverview() {
         onRefresh={fetchProducts}
         products={products}
         range={range}
+        setProductProduced={setProductProduced}
         updateProduct={updateProduct}
       />
     </div>
