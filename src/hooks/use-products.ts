@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useCallback } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import { updateProductProductionRequest } from "@/app/api/products/[id]/production/request";
 import {
   deleteProductRequest,
   updateProductRequest,
@@ -64,21 +65,40 @@ export function useProducts(range: DateRange) {
     [mutateAll]
   );
 
+  const replaceProduct = useCallback(
+    (product: Product) =>
+      mutateAll<Product[]>(
+        isProductsKey,
+        (current) =>
+          current?.map((item) => (item.id === product.id ? product : item)),
+        { revalidate: false }
+      ),
+    [mutateAll]
+  );
+
   const updateProduct = useCallback(
     async (id: string, formData: ProductSchema) => {
       try {
-        const product = await updateProductRequest(id, formData);
-        await mutateAll<Product[]>(
-          isProductsKey,
-          (current) =>
-            current?.map((item) => (item.id === id ? product : item)),
-          { revalidate: false }
+        await replaceProduct(await updateProductRequest(id, formData));
+      } catch (caughtError) {
+        throw new Error(getErrorMessage(caughtError), { cause: caughtError });
+      }
+    },
+    [replaceProduct]
+  );
+
+  /** Marca como produzido (desconta estoque) ou volta pra orçamento (devolve). */
+  const setProductProduced = useCallback(
+    async (id: string, isProduced: boolean) => {
+      try {
+        await replaceProduct(
+          await updateProductProductionRequest(id, { isProduced })
         );
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutateAll]
+    [replaceProduct]
   );
 
   const deleteProduct = useCallback(
@@ -104,6 +124,7 @@ export function useProducts(range: DateRange) {
     fetchProducts: useCallback(() => mutateProducts(), [mutateProducts]),
     isLoading,
     products: data ?? [],
+    setProductProduced,
     updateProduct,
   };
 }

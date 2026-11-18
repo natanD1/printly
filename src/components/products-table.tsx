@@ -18,6 +18,7 @@ interface ProductsTableProps {
   onRefresh: () => void;
   products: Product[];
   range: DateRange;
+  setProductProduced: (id: string, isProduced: boolean) => Promise<void>;
   updateProduct: (id: string, data: ProductSchema) => Promise<void>;
 }
 
@@ -30,6 +31,7 @@ export function ProductsTable({
   onRefresh,
   products,
   range,
+  setProductProduced,
   updateProduct,
 }: ProductsTableProps) {
   const [search, setSearch] = useState("");
@@ -47,8 +49,9 @@ export function ProductsTable({
   }, [products, search]);
 
   const columns = useMemo(
-    () => buildProductsColumns(deleteProduct, updateProduct),
-    [deleteProduct, updateProduct]
+    () =>
+      buildProductsColumns(deleteProduct, updateProduct, setProductProduced),
+    [deleteProduct, updateProduct, setProductProduced]
   );
 
   return (
