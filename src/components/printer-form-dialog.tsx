@@ -3,13 +3,8 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { ModalCommunication } from "@/components/modal-communication";
 import { PrinterForm } from "@/components/printer-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { PrinterSchema } from "@/schemas/printer-schema";
 import type { Printer } from "@/types/printer";
 
@@ -87,21 +82,19 @@ export function PrinterFormDialog({
 
   return (
     <>
-      <Dialog onOpenChange={setOpen} open={open}>
-        <DialogTrigger nativeButton={triggerIsNativeButton} render={trigger} />
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar impressora" : "Adicionar impressora"}
-            </DialogTitle>
-          </DialogHeader>
+      <Sheet onOpenChange={setOpen} open={open}>
+        <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
+        <SideSheetContent
+          size="wide"
+          title={isEditing ? "Editar impressora" : "Adicionar impressora"}
+        >
           <PrinterForm
             defaultValues={printer ? toFormValues(printer) : undefined}
             onSubmit={handleSubmit}
             submitLabel={isEditing ? "Salvar" : "Adicionar"}
           />
-        </DialogContent>
-      </Dialog>
+        </SideSheetContent>
+      </Sheet>
 
       <ModalCommunication
         description={resultModal?.description}

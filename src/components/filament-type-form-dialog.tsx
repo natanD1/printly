@@ -3,13 +3,8 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { FilamentTypeForm } from "@/components/filament-type-form";
 import { ModalCommunication } from "@/components/modal-communication";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { FilamentTypeSchema } from "@/schemas/filament-type-schema";
 import type { FilamentType } from "@/types/filament-type";
 
@@ -79,19 +74,11 @@ export function FilamentTypeFormDialog({
 
   return (
     <>
-      <Dialog onOpenChange={setOpen} open={open}>
+      <Sheet onOpenChange={setOpen} open={open}>
         {trigger ? (
-          <DialogTrigger
-            nativeButton={triggerIsNativeButton}
-            render={trigger}
-          />
+          <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
         ) : null}
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar tipo" : "Adicionar tipo"}
-            </DialogTitle>
-          </DialogHeader>
+        <SideSheetContent title={isEditing ? "Editar tipo" : "Adicionar tipo"}>
           <FilamentTypeForm
             defaultValues={
               filamentType ? { name: filamentType.name } : undefined
@@ -99,8 +86,8 @@ export function FilamentTypeFormDialog({
             onSubmit={handleSubmit}
             submitLabel={isEditing ? "Salvar" : "Adicionar"}
           />
-        </DialogContent>
-      </Dialog>
+        </SideSheetContent>
+      </Sheet>
 
       <ModalCommunication
         description={resultModal?.description}

@@ -10,10 +10,11 @@ import { NumberField } from "@/components/number-field";
 import { NumberInput } from "@/components/number-input";
 import { OptionChips } from "@/components/option-chips";
 import { ProductFilamentPicker } from "@/components/product-filament-picker";
+import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
-import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SheetClose } from "@/components/ui/sheet";
 import { useFilaments } from "@/hooks/use-filaments";
 import { usePrinters } from "@/hooks/use-printers";
 import { type ProductSchema, productSchema } from "@/schemas/product-schema";
@@ -113,7 +114,7 @@ export function ProductForm({
 
   return (
     <FormProvider {...form}>
-      <form className="flex flex-col gap-4" onSubmit={submit}>
+      <form className="flex flex-1 flex-col gap-4" onSubmit={submit}>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="productName">Nome</Label>
           <Input id="productName" {...register("productName")} />
@@ -228,10 +229,10 @@ export function ProductForm({
             // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
             <img
               alt="Foto atual do produto"
-              className="h-24 w-24 rounded-lg object-cover"
-              height={96}
+              className="size-32 rounded-xl object-cover"
+              height={128}
               src={`data:image/jpeg;base64,${existingPhotoPreview}`}
-              width={96}
+              width={128}
             />
           ) : null}
           <Input
@@ -244,14 +245,14 @@ export function ProductForm({
 
         <ProductFilamentPicker filaments={filaments} />
 
-        <div className="flex justify-end gap-2">
-          <DialogClose render={<Button type="button" variant="outline" />}>
+        <SideSheetActions>
+          <SheetClose render={<Button type="button" variant="outline" />}>
             Cancelar
-          </DialogClose>
+          </SheetClose>
           <Button disabled={isSubmitting} type="submit">
             {submitLabel}
           </Button>
-        </div>
+        </SideSheetActions>
       </form>
     </FormProvider>
   );

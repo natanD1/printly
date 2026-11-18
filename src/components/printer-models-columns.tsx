@@ -30,10 +30,10 @@ export function buildPrinterModelsColumns(
               // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
               <img
                 alt={name}
-                className="size-8 rounded-md border border-input object-cover"
-                height={32}
+                className="size-12 rounded-lg border border-input bg-muted object-contain p-0.5"
+                height={48}
                 src={`data:image/png;base64,${image}`}
-                width={32}
+                width={48}
               />
             ) : (
               <div className="size-8 rounded-md bg-muted" />

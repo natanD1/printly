@@ -30,10 +30,10 @@ export function buildFilamentBrandsColumns(
               // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
               <img
                 alt={nameBrand}
-                className="size-8 rounded-full border border-input object-cover"
-                height={32}
+                className="size-11 rounded-full border border-input object-cover"
+                height={44}
                 src={`data:image/png;base64,${imageBrand}`}
-                width={32}
+                width={44}
               />
             ) : (
               <div className="size-8 rounded-full bg-muted" />

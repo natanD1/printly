@@ -6,10 +6,11 @@ import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
 import { NumberField } from "@/components/number-field";
+import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
-import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SheetClose } from "@/components/ui/sheet";
 import { useFilamentBrands } from "@/hooks/use-filament-brands";
 import { useFilamentTypes } from "@/hooks/use-filament-types";
 import { cn } from "@/lib/utils";
@@ -93,16 +94,62 @@ export function FilamentForm({
   );
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={submit}>
+    <form className="flex flex-1 flex-col gap-4" onSubmit={submit}>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Nome</Label>
         <Input id="name" {...register("name")} />
         <FieldError message={errors.name?.message} />
       </div>
 
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="weight">Peso</Label>
+          <NumberField
+            control={control}
+            decimals={3}
+            id="weight"
+            name="weight"
+            suffix="kg"
+          />
+          <FieldError message={errors.weight?.message} />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="filamentPrice">Preço pago</Label>
+          <NumberField
+            control={control}
+            decimals={2}
+            fixed
+            id="filamentPrice"
+            name="filamentPrice"
+            prefix="R$"
+          />
+          <FieldError message={errors.filamentPrice?.message} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="colorHex">Cor</Label>
+        <div className="flex items-center gap-2">
+          <input
+            aria-label="Selecionar cor"
+            className="size-8 shrink-0 cursor-pointer rounded-lg border border-input bg-transparent"
+            onChange={handleColorPickerChange}
+            type="color"
+            value={HEX_COLOR_REGEX.test(colorHex) ? colorHex : "#000000"}
+          />
+          <Input
+            id="colorHex"
+            placeholder="#2810E2"
+            {...register("colorHex")}
+          />
+        </div>
+        <FieldError message={errors.colorHex?.message} />
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <Label>Marca</Label>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {activeBrands.length ? (
             activeBrands.map((brand) => (
               <button
@@ -121,19 +168,19 @@ export function FilamentForm({
                   // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
                   <img
                     alt={brand.nameBrand}
-                    className="size-5 shrink-0 rounded-full object-cover"
-                    height={20}
+                    className="size-7 shrink-0 rounded-full object-cover"
+                    height={28}
                     src={`data:image/png;base64,${brand.imageBrand}`}
-                    width={20}
+                    width={28}
                   />
                 ) : (
-                  <div className="size-5 shrink-0 rounded-full bg-muted" />
+                  <div className="size-7 shrink-0 rounded-full bg-muted" />
                 )}
                 <span className="truncate">{brand.nameBrand}</span>
               </button>
             ))
           ) : (
-            <p className="col-span-4 text-muted-foreground text-sm">
+            <p className="col-span-3 text-muted-foreground text-sm">
               Nenhuma marca cadastrada.
             </p>
           )}
@@ -170,60 +217,14 @@ export function FilamentForm({
         <FieldError message={errors.typeId?.message} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="colorHex">Cor</Label>
-        <div className="flex items-center gap-2">
-          <input
-            aria-label="Selecionar cor"
-            className="size-8 shrink-0 cursor-pointer rounded-lg border border-input bg-transparent"
-            onChange={handleColorPickerChange}
-            type="color"
-            value={HEX_COLOR_REGEX.test(colorHex) ? colorHex : "#000000"}
-          />
-          <Input
-            id="colorHex"
-            placeholder="#2810E2"
-            {...register("colorHex")}
-          />
-        </div>
-        <FieldError message={errors.colorHex?.message} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="weight">Peso</Label>
-          <NumberField
-            control={control}
-            decimals={3}
-            id="weight"
-            name="weight"
-            suffix="kg"
-          />
-          <FieldError message={errors.weight?.message} />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="filamentPrice">Preço pago</Label>
-          <NumberField
-            control={control}
-            decimals={2}
-            fixed
-            id="filamentPrice"
-            name="filamentPrice"
-            prefix="R$"
-          />
-          <FieldError message={errors.filamentPrice?.message} />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <DialogClose render={<Button type="button" variant="outline" />}>
+      <SideSheetActions>
+        <SheetClose render={<Button type="button" variant="outline" />}>
           Cancelar
-        </DialogClose>
+        </SheetClose>
         <Button disabled={isSubmitting} type="submit">
           {submitLabel}
         </Button>
-      </div>
+      </SideSheetActions>
     </form>
   );
 }

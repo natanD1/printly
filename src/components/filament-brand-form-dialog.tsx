@@ -3,13 +3,8 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { FilamentBrandForm } from "@/components/filament-brand-form";
 import { ModalCommunication } from "@/components/modal-communication";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { FilamentBrandSchema } from "@/schemas/filament-brand-schema";
 import type { FilamentBrand } from "@/types/filament-brand";
 
@@ -79,19 +74,13 @@ export function FilamentBrandFormDialog({
 
   return (
     <>
-      <Dialog onOpenChange={setOpen} open={open}>
+      <Sheet onOpenChange={setOpen} open={open}>
         {trigger ? (
-          <DialogTrigger
-            nativeButton={triggerIsNativeButton}
-            render={trigger}
-          />
+          <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
         ) : null}
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar marca" : "Adicionar marca"}
-            </DialogTitle>
-          </DialogHeader>
+        <SideSheetContent
+          title={isEditing ? "Editar marca" : "Adicionar marca"}
+        >
           <FilamentBrandForm
             defaultValues={
               filamentBrand
@@ -102,8 +91,8 @@ export function FilamentBrandFormDialog({
             onSubmit={handleSubmit}
             submitLabel={isEditing ? "Salvar" : "Adicionar"}
           />
-        </DialogContent>
-      </Dialog>
+        </SideSheetContent>
+      </Sheet>
 
       <ModalCommunication
         description={resultModal?.description}

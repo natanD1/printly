@@ -3,13 +3,8 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { InviteCodeForm } from "@/components/invite-code-form";
 import { ModalCommunication } from "@/components/modal-communication";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { InviteCodeSchema } from "@/schemas/invite-code-schema";
 
 interface ResultModalState {
@@ -62,15 +57,12 @@ export function InviteCodeFormDialog({
 
   return (
     <>
-      <Dialog onOpenChange={setOpen} open={open}>
-        <DialogTrigger render={trigger} />
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Gerar convite</DialogTitle>
-          </DialogHeader>
+      <Sheet onOpenChange={setOpen} open={open}>
+        <SheetTrigger render={trigger} />
+        <SideSheetContent title="Gerar convite">
           <InviteCodeForm onSubmit={handleSubmit} />
-        </DialogContent>
-      </Dialog>
+        </SideSheetContent>
+      </Sheet>
 
       <ModalCommunication
         description={resultModal?.description}

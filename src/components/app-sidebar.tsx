@@ -65,21 +65,33 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-3 overflow-hidden rounded-md p-2 group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0!">
-          <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-accent">
+        <div className="flex items-center overflow-hidden rounded-md p-2 group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0!">
+          <div className="group-data-[collapsible=icon]:hidden">
             <Image
               alt="Printly"
-              className="size-full object-cover"
-              height={32}
+              className="h-8 w-auto dark:hidden"
+              height={256}
               priority
-              src="/mark-accent-512.png"
-              width={32}
+              src="/printly-logo-horizontal.svg"
+              width={916}
+            />
+            <Image
+              alt="Printly"
+              className="hidden h-8 w-auto dark:block"
+              height={256}
+              priority
+              src="/printly-logo-horizontal-negativo.svg"
+              width={916}
             />
           </div>
-          <span className="font-semibold text-md group-data-[collapsible=icon]:hidden">
-            Print
-            <span className="text-[#5980a6]">Flow</span>
-          </span>
+          <Image
+            alt="Printly"
+            className="hidden size-8 group-data-[collapsible=icon]:block"
+            height={256}
+            priority
+            src="/printly-simbolo.svg"
+            width={256}
+          />
         </div>
       </SidebarHeader>
 

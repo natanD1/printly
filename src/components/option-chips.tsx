@@ -20,17 +20,17 @@ interface OptionChipsProps {
 
 function ChipImage({ image }: { image: string | null }) {
   if (!image) {
-    return <div className="size-5 shrink-0 rounded bg-muted" />;
+    return <div className="size-8 shrink-0 rounded-md bg-muted" />;
   }
 
   return (
     // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
     <img
       alt=""
-      className="size-5 shrink-0 rounded object-cover"
-      height={20}
+      className="size-8 shrink-0 rounded-md object-cover"
+      height={32}
       src={`data:image/png;base64,${image}`}
-      width={20}
+      width={32}
     />
   );
 }

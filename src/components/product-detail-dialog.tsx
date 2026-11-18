@@ -1,13 +1,8 @@
 "use client";
 
 import type { ReactElement } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { Product } from "@/types/product";
 import { formatCurrency } from "@/utils/format-currency";
 import { formatDuration } from "@/utils/format-duration";
@@ -29,24 +24,20 @@ export function ProductDetailDialog({
   triggerIsNativeButton = true,
 }: ProductDetailDialogProps) {
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
+    <Sheet onOpenChange={onOpenChange} open={open}>
       {trigger ? (
-        <DialogTrigger nativeButton={triggerIsNativeButton} render={trigger} />
+        <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
       ) : null}
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{product.productName}</DialogTitle>
-        </DialogHeader>
-
+      <SideSheetContent title={product.productName}>
         <div className="flex flex-col gap-4">
           {product.productPhoto ? (
             // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
             <img
               alt={product.productName}
-              className="h-40 w-40 rounded-lg object-cover"
-              height={160}
+              className="aspect-4/3 w-full rounded-xl object-cover"
+              height={360}
               src={`data:image/jpeg;base64,${product.productPhoto}`}
-              width={160}
+              width={480}
             />
           ) : null}
 
@@ -130,7 +121,7 @@ export function ProductDetailDialog({
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SideSheetContent>
+    </Sheet>
   );
 }

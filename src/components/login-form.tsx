@@ -11,11 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/use-auth";
 import { type LoginSchema, loginSchema } from "@/schemas/login-schema";
 
-interface LoginFormProps {
-  onToggleMode: () => void;
-}
-
-export function LoginForm({ onToggleMode }: LoginFormProps) {
+export function LoginForm() {
   const { login, isLoading, error } = useAuth();
   const router = useRouter();
   const {
@@ -33,11 +29,12 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
   });
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+    <form className="flex flex-col gap-5" onSubmit={onSubmit}>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">E-mail</Label>
         <Input
           autoComplete="email"
+          className="h-10"
           id="email"
           type="email"
           {...register("email")}
@@ -49,6 +46,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
         <Label htmlFor="password">Senha</Label>
         <Input
           autoComplete="current-password"
+          className="h-10"
           id="password"
           type="password"
           {...register("password")}
@@ -58,18 +56,9 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
       <FieldError message={error ?? undefined} />
 
-      <Button className="w-full" disabled={isLoading} type="submit">
+      <Button className="mt-1 h-10 w-full" disabled={isLoading} type="submit">
         {isLoading ? <Spinner /> : null}
         Entrar
-      </Button>
-
-      <Button
-        className="w-full"
-        onClick={onToggleMode}
-        type="button"
-        variant="link"
-      >
-        Cadastra-se
       </Button>
     </form>
   );

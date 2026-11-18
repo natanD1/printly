@@ -68,18 +68,18 @@ export function PrinterCard({ onDelete, onUpdate, printer }: PrinterCardProps) {
         trigger={
           <Card className="group/printer-card cursor-pointer transition-colors hover:bg-muted/50">
             <CardContent className="flex items-start gap-3">
-              <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/10">
+              <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/10">
                 {printer.modelImage ? (
                   // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
                   <img
                     alt={modelLabel}
                     className="size-full object-contain"
-                    height={64}
+                    height={80}
                     src={`data:image/png;base64,${printer.modelImage}`}
-                    width={64}
+                    width={80}
                   />
                 ) : (
-                  <Printer3d className="size-6 text-muted-foreground" />
+                  <Printer3d className="size-7 text-muted-foreground" />
                 )}
               </span>
 

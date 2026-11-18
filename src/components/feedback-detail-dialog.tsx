@@ -2,14 +2,9 @@
 
 import type { MouseEvent, ReactElement } from "react";
 import { useCallback, useState } from "react";
+import { SideSheetContent } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { Feedback, FeedbackStatus } from "@/types/feedback";
 import { parseBrazilianDate } from "@/utils/parse-brazilian-date";
 
@@ -67,15 +62,11 @@ export function FeedbackDetailDialog({
   );
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
+    <Sheet onOpenChange={onOpenChange} open={open}>
       {trigger ? (
-        <DialogTrigger nativeButton={triggerIsNativeButton} render={trigger} />
+        <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
       ) : null}
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{feedback.title}</DialogTitle>
-        </DialogHeader>
-
+      <SideSheetContent title={feedback.title}>
         <div className="flex flex-col gap-4">
           <p className="whitespace-pre-wrap text-sm">{feedback.description}</p>
 
@@ -117,7 +108,7 @@ export function FeedbackDetailDialog({
             <p className="text-destructive text-sm">{errorMessage}</p>
           ) : null}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SideSheetContent>
+    </Sheet>
   );
 }

@@ -7,11 +7,12 @@ import { FieldError } from "@/components/field-error";
 import { NumberField } from "@/components/number-field";
 import { OptionChips } from "@/components/option-chips";
 import { OptionalCost } from "@/components/optional-cost";
+import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
-import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { SheetClose } from "@/components/ui/sheet";
 import { usePrinterBrands } from "@/hooks/use-printer-brands";
 import { usePrinterModels } from "@/hooks/use-printer-models";
 import { type PrinterSchema, printerSchema } from "@/schemas/printer-schema";
@@ -107,7 +108,7 @@ export function PrinterForm({
   );
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={submit}>
+    <form className="flex flex-1 flex-col gap-4" onSubmit={submit}>
       <div className="flex flex-col gap-1.5">
         <Label>Marca</Label>
         <OptionChips
@@ -251,14 +252,14 @@ export function PrinterForm({
         </div>
       </OptionalCost>
 
-      <div className="flex justify-end gap-2">
-        <DialogClose render={<Button type="button" variant="outline" />}>
+      <SideSheetActions>
+        <SheetClose render={<Button type="button" variant="outline" />}>
           Cancelar
-        </DialogClose>
+        </SheetClose>
         <Button disabled={isSubmitting} type="submit">
           {submitLabel}
         </Button>
-      </div>
+      </SideSheetActions>
     </form>
   );
 }

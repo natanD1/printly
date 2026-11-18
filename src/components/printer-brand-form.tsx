@@ -3,10 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
-import { DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SheetClose } from "@/components/ui/sheet";
 import {
   type PrinterBrandSchema,
   printerBrandSchema,
@@ -39,21 +40,21 @@ export function PrinterBrandForm({
   const submit = handleSubmit(onSubmit);
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={submit}>
+    <form className="flex flex-1 flex-col gap-4" onSubmit={submit}>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Nome</Label>
         <Input id="name" {...register("name")} />
         <FieldError message={errors.name?.message} />
       </div>
 
-      <div className="flex justify-end gap-2">
-        <DialogClose render={<Button type="button" variant="outline" />}>
+      <SideSheetActions>
+        <SheetClose render={<Button type="button" variant="outline" />}>
           Cancelar
-        </DialogClose>
+        </SheetClose>
         <Button disabled={isSubmitting} type="submit">
           {submitLabel}
         </Button>
-      </div>
+      </SideSheetActions>
     </form>
   );
 }

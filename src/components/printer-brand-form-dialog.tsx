@@ -3,13 +3,8 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { ModalCommunication } from "@/components/modal-communication";
 import { PrinterBrandForm } from "@/components/printer-brand-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { SideSheetContent } from "@/components/side-sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import type { PrinterBrandSchema } from "@/schemas/printer-brand-schema";
 import type { PrinterBrand } from "@/types/printer-brand";
 
@@ -79,19 +74,13 @@ export function PrinterBrandFormDialog({
 
   return (
     <>
-      <Dialog onOpenChange={setOpen} open={open}>
+      <Sheet onOpenChange={setOpen} open={open}>
         {trigger ? (
-          <DialogTrigger
-            nativeButton={triggerIsNativeButton}
-            render={trigger}
-          />
+          <SheetTrigger nativeButton={triggerIsNativeButton} render={trigger} />
         ) : null}
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar marca" : "Adicionar marca"}
-            </DialogTitle>
-          </DialogHeader>
+        <SideSheetContent
+          title={isEditing ? "Editar marca" : "Adicionar marca"}
+        >
           <PrinterBrandForm
             defaultValues={
               printerBrand ? { name: printerBrand.name } : undefined
@@ -99,8 +88,8 @@ export function PrinterBrandFormDialog({
             onSubmit={handleSubmit}
             submitLabel={isEditing ? "Salvar" : "Adicionar"}
           />
-        </DialogContent>
-      </Dialog>
+        </SideSheetContent>
+      </Sheet>
 
       <ModalCommunication
         description={resultModal?.description}
