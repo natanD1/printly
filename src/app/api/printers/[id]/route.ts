@@ -38,7 +38,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof ApiError) {
       return NextResponse.json(
-        { message: error.message },
+        { code: error.code, message: error.message },
         { status: error.status }
       );
     }
@@ -64,7 +64,7 @@ export async function DELETE(
   } catch (error) {
     if (error instanceof ApiError) {
       return NextResponse.json(
-        { message: error.message },
+        { code: error.code, message: error.message },
         { status: error.status }
       );
     }

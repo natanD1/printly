@@ -12,6 +12,7 @@ import {
   createProductRequest,
   getProductsRequest,
 } from "@/app/api/products/request";
+import { MY_PLAN_KEY } from "@/hooks/use-my-plan";
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { ApiErrorResponse } from "@/types/auth";
 import type { Product } from "@/types/product";
@@ -38,6 +39,15 @@ function getErrorMessage(error: unknown): string {
   return "Erro inesperado";
 }
 
+/** Código de negócio do backend (ex.: `PLAN_LIMIT_REACHED`), se o erro trouxer um. */
+function getErrorCode(error: unknown): string | null {
+  if (axios.isAxiosError<ApiErrorResponse>(error)) {
+    return error.response?.data.code ?? null;
+  }
+
+  return null;
+}
+
 export function useProducts(range: DateRange) {
   const { from, to } = toApiParams(range);
   const { mutate: mutateAll } = useSWRConfig();
@@ -58,6 +68,7 @@ export function useProducts(range: DateRange) {
         await createProductRequest(formData);
         // O produto novo pode ou não cair no período de cada cache: revalida todos.
         await mutateAll(isProductsKey);
+        await mutateAll(MY_PLAN_KEY);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
@@ -110,6 +121,7 @@ export function useProducts(range: DateRange) {
           (current) => current?.filter((item) => item.id !== id),
           { revalidate: false }
         );
+        await mutateAll(MY_PLAN_KEY);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
@@ -121,6 +133,7 @@ export function useProducts(range: DateRange) {
     createProduct,
     deleteProduct,
     error: error ? getErrorMessage(error) : null,
+    errorCode: getErrorCode(error),
     fetchProducts: useCallback(() => mutateProducts(), [mutateProducts]),
     isLoading,
     products: data ?? [],

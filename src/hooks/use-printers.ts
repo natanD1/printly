@@ -11,6 +11,7 @@ import {
   createPrinterRequest,
   getPrintersRequest,
 } from "@/app/api/printers/request";
+import { MY_PLAN_KEY } from "@/hooks/use-my-plan";
 import { isProductsKey } from "@/hooks/use-products";
 import type { PrinterSchema } from "@/schemas/printer-schema";
 import type { ApiErrorResponse } from "@/types/auth";
@@ -42,11 +43,12 @@ export function usePrinters() {
         await mutatePrinters((current) => [...(current ?? []), printer], {
           revalidate: false,
         });
+        await mutateAll(MY_PLAN_KEY);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutatePrinters]
+    [mutateAll, mutatePrinters]
   );
 
   const updatePrinter = useCallback(
@@ -77,6 +79,7 @@ export function usePrinters() {
         );
         // Produtos que usavam a impressora ficam sem ela (backend faz SetNull).
         await mutateAll(isProductsKey);
+        await mutateAll(MY_PLAN_KEY);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }

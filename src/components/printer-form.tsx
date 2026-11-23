@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SheetClose } from "@/components/ui/sheet";
+import { UpgradeNotice } from "@/components/upgrade-notice";
+import { useEntitlement } from "@/hooks/use-entitlement";
 import { usePrinterBrands } from "@/hooks/use-printer-brands";
 import { usePrinterModels } from "@/hooks/use-printer-models";
 import { type PrinterSchema, printerSchema } from "@/schemas/printer-schema";
@@ -66,6 +68,27 @@ export function PrinterForm({
   const failureEnabled = watch("failureEnabled");
 
   const submit = handleSubmit(onSubmit);
+
+  // Sem o recurso no plano, só bloqueia LIGAR: custo ligado (salvo ou ligado antes do plano carregar)
+  // sempre pode ser desligado; religar só se já estava ligado no valor salvo (o backend aceita).
+  const { enabled: optionalCostsEnabled } = useEntitlement(
+    "OptionalCostsEnabled"
+  );
+  const isDepreciationLocked = !(
+    optionalCostsEnabled ||
+    defaultValues?.depreciationEnabled ||
+    depreciationEnabled
+  );
+  const isMaintenanceLocked = !(
+    optionalCostsEnabled ||
+    defaultValues?.maintenanceEnabled ||
+    maintenanceEnabled
+  );
+  const isFailureLocked = !(
+    optionalCostsEnabled ||
+    defaultValues?.failureEnabled ||
+    failureEnabled
+  );
 
   // Inativos somem da escolha, mas o já selecionado continua visível na edição.
   const brandOptions = useMemo(
@@ -172,9 +195,14 @@ export function PrinterForm({
 
       <Separator />
 
+      {isDepreciationLocked || isMaintenanceLocked || isFailureLocked ? (
+        <UpgradeNotice message="Depreciação, manutenção e perda por falha não estão disponíveis no seu plano." />
+      ) : null}
+
       <OptionalCost
         control={control}
         description="Desgaste da impressora a cada hora impressa"
+        disabled={isDepreciationLocked}
         title="Depreciação"
         toggle="depreciationEnabled"
       >
@@ -211,7 +239,7 @@ export function PrinterForm({
       <OptionalCost
         control={control}
         description="Percentual sobre a depreciação (precisa dela ligada)"
-        disabled={!depreciationEnabled}
+        disabled={!depreciationEnabled || isMaintenanceLocked}
         title="Manutenção"
         toggle="maintenanceEnabled"
       >
@@ -236,6 +264,7 @@ export function PrinterForm({
       <OptionalCost
         control={control}
         description="Reserva pra peças que falham e precisam ser refeitas"
+        disabled={isFailureLocked}
         title="Perda por falha"
         toggle="failureEnabled"
       >

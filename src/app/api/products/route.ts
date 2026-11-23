@@ -31,7 +31,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   } catch (error) {
     if (error instanceof ApiError) {
       return NextResponse.json(
-        { message: error.message },
+        { code: error.code, message: error.message },
         { status: error.status }
       );
     }
@@ -55,7 +55,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (error) {
     if (error instanceof ApiError) {
       return NextResponse.json(
-        { message: error.message },
+        { code: error.code, message: error.message },
         { status: error.status }
       );
     }

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
+import { useQuoteBranding } from "@/hooks/use-quote-branding";
 import { useQuoteCompany } from "@/hooks/use-quote-company";
 import { quoteShareSchema } from "@/schemas/quote-share-schema";
 import type { QuoteData } from "@/types/quote";
@@ -45,6 +46,11 @@ export function QuoteWhatsappSheet({
   quote,
 }: QuoteWhatsappSheetProps) {
   const { company, isLoading: isCompanyLoading } = useQuoteCompany();
+  const {
+    isReady: isBrandingReady,
+    showBrandingFooter,
+    showCompanyLogo,
+  } = useQuoteBranding();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string | undefined>();
@@ -70,14 +76,15 @@ export function QuoteWhatsappSheet({
   // (o download e a abertura do app precisam do gesto do usuário).
   // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` só força nova tentativa.
   useEffect(() => {
-    if (!open || isCompanyLoading) {
+    // Espera empresa e plano: logo/rodapé dependem dele e não podem piscar.
+    if (!open || isCompanyLoading || !isBrandingReady) {
       return;
     }
 
     let cancelled = false;
     setPdf({ status: "loading" });
 
-    generateQuotePdf(quote, company)
+    generateQuotePdf(quote, company, { showBrandingFooter, showCompanyLogo })
       .then((blob) => {
         if (!cancelled) {
           setPdf({
@@ -98,7 +105,16 @@ export function QuoteWhatsappSheet({
     return () => {
       cancelled = true;
     };
-  }, [open, isCompanyLoading, quote, company, attempt]);
+  }, [
+    open,
+    isCompanyLoading,
+    isBrandingReady,
+    showBrandingFooter,
+    showCompanyLogo,
+    quote,
+    company,
+    attempt,
+  ]);
 
   const handleClose = useCallback(() => {
     onOpenChange(false);

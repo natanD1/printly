@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuoteBranding } from "@/hooks/use-quote-branding";
 import { useQuoteCompany } from "@/hooks/use-quote-company";
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { Product } from "@/types/product";
@@ -62,6 +63,11 @@ export function ProductRowActions({
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const { company, isLoading: isCompanyLoading } = useQuoteCompany();
+  const {
+    isReady: isBrandingReady,
+    showBrandingFooter,
+    showCompanyLogo,
+  } = useQuoteBranding();
   const quote = useMemo(() => toQuoteData(product), [product]);
   const [actionError, setActionError] = useState<ActionError | null>(null);
 
@@ -121,7 +127,10 @@ export function ProductRowActions({
   const handleGeneratePdf = useCallback(async () => {
     setIsGeneratingPdf(true);
     try {
-      const blob = await generateQuotePdf(quote, company);
+      const blob = await generateQuotePdf(quote, company, {
+        showBrandingFooter,
+        showCompanyLogo,
+      });
       downloadBlob(blob, quoteFileName(quote.productName));
     } catch (caughtError) {
       console.error("Falha ao gerar o PDF do orçamento", caughtError);
@@ -132,7 +141,7 @@ export function ProductRowActions({
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [quote, company]);
+  }, [quote, company, showBrandingFooter, showCompanyLogo]);
 
   const handleErrorOpenChange = useCallback((isOpen: boolean) => {
     if (!isOpen) {
@@ -166,7 +175,7 @@ export function ProductRowActions({
               : "Marcar como produzido"}
           </DropdownMenuItem>
           <DropdownMenuItem
-            disabled={isGeneratingPdf || isCompanyLoading}
+            disabled={isGeneratingPdf || isCompanyLoading || !isBrandingReady}
             onClick={handleGeneratePdf}
           >
             <FileText />

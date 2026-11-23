@@ -21,6 +21,8 @@ export interface QuoteDocumentProps {
   photoSrc: string | null;
   productName: string;
   quantity: number;
+  /** `false` remove o rodapé "Gerado com Printly" (recurso do plano). */
+  showBrandingFooter: boolean;
   /** Logo do Printly em PNG pro rodapé (ou `null` se a conversão falhar). */
   systemLogoSrc: string | null;
   totalLabel: string;
@@ -84,6 +86,7 @@ export function QuoteDocument({
   photoSrc,
   productName,
   quantity,
+  showBrandingFooter,
   systemLogoSrc,
   totalLabel,
   unitLabel,
@@ -140,14 +143,16 @@ export function QuoteDocument({
           </View>
         </View>
 
-        <View fixed style={styles.footer}>
-          <Text style={styles.footerText}>Gerado com</Text>
-          {systemLogoSrc ? (
-            <Image src={systemLogoSrc} style={styles.footerLogo} />
-          ) : (
-            <Text style={styles.footerText}>Printly</Text>
-          )}
-        </View>
+        {showBrandingFooter ? (
+          <View fixed style={styles.footer}>
+            <Text style={styles.footerText}>Gerado com</Text>
+            {systemLogoSrc ? (
+              <Image src={systemLogoSrc} style={styles.footerLogo} />
+            ) : (
+              <Text style={styles.footerText}>Printly</Text>
+            )}
+          </View>
+        ) : null}
       </Page>
     </Document>
   );

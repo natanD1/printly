@@ -6,6 +6,7 @@ import type { ChangeEvent } from "react";
 import { useCallback, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { FileInput } from "@/components/file-input";
 import { NumberField } from "@/components/number-field";
 import { NumberInput } from "@/components/number-input";
 import { OptionChips } from "@/components/option-chips";
@@ -235,12 +236,7 @@ export function ProductForm({
               width={128}
             />
           ) : null}
-          <Input
-            accept="image/*"
-            id="photo"
-            onChange={handlePhotoChange}
-            type="file"
-          />
+          <FileInput accept="image/*" id="photo" onChange={handlePhotoChange} />
         </div>
 
         <ProductFilamentPicker filaments={filaments} />
