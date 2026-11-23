@@ -22,9 +22,12 @@ import type { ApiErrorResponse, AuthUser } from "@/types/auth";
 export interface AuthContextValue {
   error: string | null;
   isLoading: boolean;
-  login: (data: LoginSchema) => Promise<void>;
+  /** `true` até o `GET /auth/me` inicial resolver (sucesso ou falha). */
+  isSessionLoading: boolean;
+  login: (data: LoginSchema) => Promise<AuthUser>;
   logout: () => Promise<void>;
-  register: (data: RegisterSchema) => Promise<void>;
+  register: (data: RegisterSchema) => Promise<AuthUser>;
+  setCurrentUser: (user: AuthUser) => void;
   user: AuthUser | null;
 }
 
@@ -42,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
 
@@ -51,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await loginRequest(data);
       setUser(result.user);
+      return result.user;
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
       throw caughtError;
@@ -63,8 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await registerRequest(data);
+      const result = await registerRequest({
+        email: data.email,
+        inviteCode: data.inviteCode,
+        name: data.name,
+        password: data.password,
+      });
       setUser(result.user);
+      return result.user;
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
       throw caughtError;
@@ -90,12 +101,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     getCurrentUserRequest()
       .then(setUser)
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => setIsSessionLoading(false));
   }, []);
 
   useEffect(() => {
     setUnauthorizedHandler(() => setIsSessionExpired(true));
     return () => setUnauthorizedHandler(null);
+  }, []);
+
+  const setCurrentUser = useCallback((nextUser: AuthUser) => {
+    setUser(nextUser);
   }, []);
 
   const handleSessionExpiredConfirm = useCallback(async () => {
@@ -109,9 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         error,
         isLoading,
+        isSessionLoading,
         login,
         logout,
         register,
+        setCurrentUser,
         user,
       }}
     >

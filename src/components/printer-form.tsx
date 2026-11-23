@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useMemo } from "react";
+import { type ReactNode, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
 import { NumberField } from "@/components/number-field";
@@ -20,6 +20,7 @@ import { type PrinterSchema, printerSchema } from "@/schemas/printer-schema";
 interface PrinterFormProps {
   defaultValues?: PrinterSchema;
   onSubmit: (data: PrinterSchema) => Promise<void>;
+  renderActions?: (state: { isSubmitting: boolean }) => ReactNode;
   submitLabel: string;
 }
 
@@ -41,6 +42,7 @@ const EMPTY_VALUES: PrinterSchema = {
 export function PrinterForm({
   defaultValues,
   onSubmit,
+  renderActions,
   submitLabel,
 }: PrinterFormProps) {
   const { printerBrands } = usePrinterBrands();
@@ -252,14 +254,18 @@ export function PrinterForm({
         </div>
       </OptionalCost>
 
-      <SideSheetActions>
-        <SheetClose render={<Button type="button" variant="outline" />}>
-          Cancelar
-        </SheetClose>
-        <Button disabled={isSubmitting} type="submit">
-          {submitLabel}
-        </Button>
-      </SideSheetActions>
+      {renderActions ? (
+        renderActions({ isSubmitting })
+      ) : (
+        <SideSheetActions>
+          <SheetClose render={<Button type="button" variant="outline" />}>
+            Cancelar
+          </SheetClose>
+          <Button disabled={isSubmitting} type="submit">
+            {submitLabel}
+          </Button>
+        </SideSheetActions>
+      )}
     </form>
   );
 }

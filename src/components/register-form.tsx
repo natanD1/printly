@@ -2,14 +2,20 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { PasswordInput } from "@/components/password-input";
+import { PasswordStrength } from "@/components/password-strength";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/use-auth";
-import { type RegisterSchema, registerSchema } from "@/schemas/register-schema";
+import {
+  type RegisterFormSchema,
+  registerFormSchema,
+} from "@/schemas/register-schema";
 
 export function RegisterForm() {
   const { register: registerUser, isLoading, error } = useAuth();
@@ -17,14 +23,34 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    getValues,
+    trigger,
+    watch,
     formState: { errors },
-  } = useForm<RegisterSchema>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<RegisterFormSchema>({
+    resolver: zodResolver(registerFormSchema),
   });
 
+  const password = watch("password") ?? "";
+
+  // Revalida a confirmação quando a senha muda e ela já foi preenchida.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `password` é o gatilho
+  useEffect(() => {
+    if (getValues("confirmPassword")) {
+      trigger("confirmPassword");
+    }
+  }, [password, getValues, trigger]);
+
   const onSubmit = handleSubmit(async (data) => {
-    await registerUser(data)
-      .then(() => router.push("/home"))
+    await registerUser({
+      email: data.email,
+      inviteCode: data.inviteCode,
+      name: data.name,
+      password: data.password,
+    })
+      .then((user) =>
+        router.push(user.onboardingCompleted ? "/home" : "/onboarding")
+      )
       .catch(() => null);
   });
 
@@ -55,14 +81,25 @@ export function RegisterForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">Senha</Label>
-        <Input
+        <PasswordInput
           autoComplete="new-password"
           className="h-10"
           id="password"
-          type="password"
           {...register("password")}
         />
+        <PasswordStrength password={password} />
         <FieldError message={errors.password?.message} />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="confirmPassword">Confirmar senha</Label>
+        <PasswordInput
+          autoComplete="new-password"
+          className="h-10"
+          id="confirmPassword"
+          {...register("confirmPassword")}
+        />
+        <FieldError message={errors.confirmPassword?.message} />
       </div>
 
       <div className="flex flex-col gap-1.5">

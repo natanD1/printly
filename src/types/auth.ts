@@ -4,6 +4,7 @@ export interface AuthUser {
   id: string;
   isAdmin: boolean;
   name: string;
+  onboardingCompleted: boolean;
 }
 
 export interface AuthSession {
