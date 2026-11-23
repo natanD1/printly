@@ -1,22 +1,28 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { apiFetch } from "@/lib/api-client";
-import { AUTH_COOKIE_NAME, clearAuthCookie } from "@/lib/auth-cookie";
+import { clearAuthCookies, REFRESH_COOKIE_NAME } from "@/lib/auth-cookie";
+import { rejectCrossSite } from "@/lib/cross-site";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(): Promise<NextResponse> {
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+export async function POST(request: Request): Promise<NextResponse> {
+  const crossSite = rejectCrossSite(request);
+  if (crossSite) {
+    return crossSite;
+  }
 
-  if (token) {
+  const refreshToken = (await cookies()).get(REFRESH_COOKIE_NAME)?.value;
+
+  if (refreshToken) {
     await apiFetch<void>("/auth/logout", {
-      headers: { Authorization: `Bearer ${token}` },
+      body: { refreshToken },
       method: "POST",
     }).catch(() => null);
   }
 
   const response = NextResponse.json({ success: true });
-  clearAuthCookie(response.cookies);
+  clearAuthCookies(response.cookies);
 
   return response;
 }

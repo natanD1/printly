@@ -20,12 +20,16 @@
 - `src/components` — componentes React sem subpastas por escopo (ex: `login-form.tsx`, `auth-forms.tsx` direto em `src/components`). `src/components/ui` é exceção, reservada aos componentes do shadcn/ui.
   - Escolha única entre opções vindas da API (marca, modelo, impressora) usa `OptionChips` (`src/components/option-chips.tsx`), não `<select>` nativo — evita o gotcha 2 abaixo e segue o visual do seletor de marca/tipo de filamento.
   - **Sem modal centralizado**: criar/editar/visualizar abre em painel lateral direito (`Sheet` + `SideSheetContent` de `src/components/side-sheet.tsx`; ações do form dentro de `SideSheetActions`, que fica preso no rodapé). `ui/dialog` foi removido de propósito. Exceção: confirmação e aviso de resultado continuam em `AlertDialog` (`ModalCommunication`).
-- `src/proxy.ts` — proxy do Next.js (equivalente ao antigo `middleware.ts` a partir do Next 16) que protege rotas: bloqueia `/home` sem cookie de sessão (redireciona pra `/auth`) e bloqueia `/auth` com sessão ativa (redireciona pra `/home`).
+- `src/proxy.ts` — proxy do Next.js (equivalente ao antigo `middleware.ts` a partir do Next 16) que protege rotas: bloqueia rotas protegidas sem sessão (redireciona pra `/auth`) e bloqueia `/auth` com sessão ativa (redireciona pra `/home`). Sessão = cookie `printly_session` ou `printly_token`.
 
 ## Rotas protegidas
 
 - Rotas autenticadas ficam listadas em `protectedRoutes` dentro de `src/proxy.ts`.
-- A verificação é feita pela presença do cookie httpOnly definido em `src/lib/auth-cookie.ts` (`AUTH_COOKIE_NAME`), setado pelas rotas de `src/app/api/auth/login` e `.../register`.
+- Sessão = 3 cookies httpOnly (`src/lib/auth-cookie.ts`, `setAuthCookies`/`clearAuthCookies`), setados por `login`/`register`/`refresh` (`route.ts`):
+  - `printly_token` (`AUTH_COOKIE_NAME`) — **access token** JWT, 15 min, `path=/`. É o que as rotas autenticadas leem pra montar o `Bearer`.
+  - `printly_refresh` — **refresh token** opaco, 7 dias (janela deslizante), `path=/api/auth`, `sameSite=strict`. Só chega nas rotas `/api/auth/*`; rotaciona a cada uso (reuso de token antigo derruba a família no backend).
+  - `printly_session` — marcador sem segredo (`"1"`, 7 dias, `path=/`) que o `proxy.ts` usa pra saber que há sessão, já que o access some em 15 min e o refresh não vai em navegação de página.
+- Nenhum token chega ao JS do browser (corpo de login/register/refresh devolve só `{ user }`; nada em `localStorage`).
 - Novas telas que exigem login: criar a rota em `src/app/<rota>` e adicionar `/<rota>` em `protectedRoutes` no `src/proxy.ts`.
 
 ### Admin-only (`isAdmin`)
@@ -55,6 +59,10 @@ Por que não simplificar em uma camada só (browser chamando `API_URL` direto):
 - O token que o backend devolve no login vira cookie **httpOnly** dentro do `route.ts` — o browser nunca tem acesso a esse token via JS, só o navegador manda o cookie automaticamente. Se o browser chamasse o backend direto, o token precisaria ficar exposto no client (menos seguro) e o backend precisaria de CORS liberado pro navegador.
 
 Regra: `API_URL` só pode ser usado dentro de `route.ts` (via `api-client.ts`). `src/lib/api.ts` nunca aponta pro backend real, só pra `/api`.
+
+### Refresh automático (`src/lib/api.ts`)
+
+O interceptor de resposta trata 401 de qualquer endpoint, exceto `/auth/login`, `/auth/register`, `/auth/refresh` e `/auth/logout`: chama `POST /api/auth/refresh` (cliente axios separado, sem interceptor) e reenvia a requisição original uma vez (`_retry`). Um único refresh por vez (promise compartilhada no módulo + `navigator.locks` entre abas). Se o servidor rejeitar o refresh (4xx), dispara o `unauthorizedHandler` (modal "Sessão expirada"); falha de rede/5xx só rejeita a requisição, sem derrubar a sessão. Requisição com `skipSessionExpired: true` (ex: `getCurrentUserRequest`, sondagem inicial no `/auth`) nunca abre o modal.
 
 ## Guias carregados sob demanda
 

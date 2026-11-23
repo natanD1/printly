@@ -8,7 +8,10 @@ export interface AuthUser {
 }
 
 export interface AuthSession {
-  token: string;
+  accessToken: string;
+  accessTokenExpiresIn: number;
+  refreshToken: string;
+  refreshTokenExpiresIn: number;
   user: AuthUser;
 }
 

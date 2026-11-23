@@ -44,7 +44,7 @@ Regras:
 
 ### Endpoints autenticados (`route.ts` que chamam o backend real)
 
-Toda rota que exige login no backend segue o mesmo idioma pra repassar o token: lê o cookie httpOnly (`AUTH_COOKIE_NAME`, via `cookies()` de `next/headers`) e manda como `Authorization: Bearer ${token}` no `apiFetch`. Exemplo já aplicado em `src/app/api/auth/logout/route.ts` e replicado em `src/app/api/filaments/`:
+Toda rota que exige login no backend segue o mesmo idioma pra repassar o token: lê o cookie httpOnly (`AUTH_COOKIE_NAME`, via `cookies()` de `next/headers`) e manda como `Authorization: Bearer ${token}` no `apiFetch`. Exemplo já aplicado em `src/app/api/auth/me/route.ts` e replicado em `src/app/api/filaments/` (o `logout`/`refresh` usam o cookie de refresh no corpo, sem Bearer):
 
 ```ts
 // src/app/api/<dominio>/route.ts
