@@ -268,7 +268,7 @@ export function ProductFilamentPicker({
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">
-          Nenhum filamento cadastrado. Cadastre no Estoque antes de criar o
+          Nenhum filamento cadastrado. Cadastre em Filamentos antes de criar o
           produto.
         </p>
       )}

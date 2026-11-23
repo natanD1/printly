@@ -9,7 +9,7 @@ import { FieldError } from "@/components/field-error";
 import { FileInput } from "@/components/file-input";
 import { NumberField } from "@/components/number-field";
 import { NumberInput } from "@/components/number-input";
-import { OptionChips } from "@/components/option-chips";
+import { OptionCardPicker } from "@/components/option-card-picker";
 import { ProductFilamentPicker } from "@/components/product-filament-picker";
 import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
@@ -123,25 +123,31 @@ export function ProductForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label>Impressora</Label>
           {printers.length || isLoadingPrinters ? (
-            <OptionChips
+            <OptionCardPicker
               emptyMessage="Carregando impressoras..."
+              emptySearchMessage="Nenhuma impressora encontrada."
+              imageSize="lg"
+              label="Impressora"
               onSelect={handleSelectPrinter}
               options={printerOptions}
+              searchPlaceholder="Pesquisar impressora..."
               value={printerId}
             />
           ) : (
-            <p className="text-muted-foreground text-sm">
-              Nenhuma impressora cadastrada.{" "}
-              <Link
-                className="underline underline-offset-2"
-                href="/impressoras"
-              >
-                Cadastre uma
-              </Link>{" "}
-              pra calcular o custo.
-            </p>
+            <>
+              <Label>Impressora</Label>
+              <p className="text-muted-foreground text-sm">
+                Nenhuma impressora cadastrada.{" "}
+                <Link
+                  className="underline underline-offset-2"
+                  href="/impressoras"
+                >
+                  Cadastre uma
+                </Link>{" "}
+                pra calcular o custo.
+              </p>
+            </>
           )}
           <p className="text-muted-foreground text-xs">
             Potência, desgaste e margem vêm dela

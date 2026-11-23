@@ -36,7 +36,7 @@ export function FilamentBrandsOverview() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <FilamentBrandsToolbar
         onCreate={createFilamentBrand}
         onRefresh={fetchFilamentBrands}
@@ -47,7 +47,7 @@ export function FilamentBrandsOverview() {
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {isLoading ? (
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="min-h-96 w-full flex-1" />
       ) : (
         <DataTable
           columns={columns}

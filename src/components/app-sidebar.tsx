@@ -2,7 +2,6 @@
 
 import {
   BadgeDollarSign,
-  Box,
   Heart,
   Home,
   Layers,
@@ -12,6 +11,7 @@ import {
   Printer3d,
   Rocket,
   Settings,
+  Spool,
   Tags,
   Ticket,
   Users,
@@ -37,7 +37,7 @@ import { Separator } from "./ui/separator";
 
 const generalNavItems = [
   { icon: Home, title: "Home", url: "/home" },
-  { icon: Box, title: "Estoque", url: "/estoque" },
+  { icon: Spool, title: "Filamentos", url: "/filamentos" },
   { icon: Printer3d, title: "Impressoras", url: "/impressoras" },
   { icon: Rocket, title: "Planos", url: "/assinatura" },
 ];

@@ -46,10 +46,11 @@ export function DataTable<TData, TValue>({
 
   const goToPreviousPage = useCallback(() => table.previousPage(), [table]);
   const goToNextPage = useCallback(() => table.nextPage(), [table]);
+  const { rows } = table.getRowModel();
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-lg border">
+    <div className="flex flex-1 flex-col gap-3">
+      <div className="flex min-h-64 flex-1 flex-col overflow-hidden rounded-lg border bg-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -67,9 +68,9 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
+          {rows.length > 0 ? (
+            <TableBody className="[&_tr:last-child]:border-b">
+              {rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -80,20 +81,17 @@ export function DataTable<TData, TValue>({
                     </TableCell>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  className="h-24 text-center text-muted-foreground"
-                  colSpan={columns.length}
-                >
-                  <BrushCleaning className="mx-auto mb-2 size-8" />
-                  {emptyMessage}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+              ))}
+            </TableBody>
+          ) : null}
         </Table>
+
+        {rows.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-muted-foreground">
+            <BrushCleaning aria-hidden="true" className="mb-2 size-8" />
+            <p className="text-sm">{emptyMessage}</p>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex items-center justify-between">

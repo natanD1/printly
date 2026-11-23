@@ -26,36 +26,27 @@ export function PlansOverview() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-0.5">
-          <h1 className="font-heading font-semibold text-xl">Planos</h1>
-          <p className="text-muted-foreground text-sm">
-            Limites e recursos de cada plano. As regras são aplicadas pelo
-            sistema.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={fetchPlans} size="lg" variant="outline">
-            <RefreshCw />
-            Atualizar
-          </Button>
-          <PlanFormDialog
-            onSubmit={createPlan}
-            trigger={
-              <Button size="lg">
-                <Plus />
-                Novo plano
-              </Button>
-            }
-          />
-        </div>
+    <div className="flex flex-1 flex-col gap-4">
+      <div className="flex items-center justify-end gap-2">
+        <Button onClick={fetchPlans} size="lg" variant="outline">
+          <RefreshCw />
+          Atualizar
+        </Button>
+        <PlanFormDialog
+          onSubmit={createPlan}
+          trigger={
+            <Button size="lg">
+              <Plus />
+              Novo plano
+            </Button>
+          }
+        />
       </div>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {isLoading ? (
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="min-h-96 w-full flex-1" />
       ) : (
         <DataTable
           columns={columns}

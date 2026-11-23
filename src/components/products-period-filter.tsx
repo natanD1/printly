@@ -1,26 +1,22 @@
 "use client";
 
-import { Calendar } from "lucide-react";
-import { type ChangeEvent, useCallback, useState } from "react";
+import { Calendar, Check } from "lucide-react";
+import { useCallback, useState } from "react";
+import { DateRangeCalendar } from "@/components/date-range-calendar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import {
   currentMonthRange,
   type DateRange,
   formatRangeLabel,
-  fromDateInputValue,
   homeFullRange,
   homeMinDate,
   isSameRange,
   previousMonthRange,
-  toDateInputValue,
   today,
 } from "@/utils/date-filters";
 
@@ -57,12 +53,17 @@ function PresetButton({
 
   return (
     <Button
-      className="justify-start"
+      className="justify-between"
       disabled={disabled}
       onClick={handleClick}
+      size="sm"
+      type="button"
       variant={isActive ? "secondary" : "ghost"}
     >
-      {label}
+      <span>{label}</span>
+      {isActive ? (
+        <Check aria-hidden="true" className="size-3.5 text-primary" />
+      ) : null}
     </Button>
   );
 }
@@ -76,34 +77,12 @@ export function ProductsPeriodFilter({
   const minDate = homeMinDate(monthsBack);
   const maxDate = today();
 
-  const handlePreset = useCallback(
+  const handleSelectRange = useCallback(
     (range: DateRange) => {
       onChange(range);
       setIsOpen(false);
     },
     [onChange]
-  );
-
-  const handleFromChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const from = fromDateInputValue(event.target.value);
-
-      if (from && (!minDate || from >= minDate) && from <= value.to) {
-        onChange({ from, to: value.to });
-      }
-    },
-    [minDate, onChange, value.to]
-  );
-
-  const handleToChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const to = fromDateInputValue(event.target.value);
-
-      if (to && to >= value.from && to <= today()) {
-        onChange({ from: value.from, to });
-      }
-    },
-    [onChange, value.from]
   );
 
   return (
@@ -112,53 +91,46 @@ export function ProductsPeriodFilter({
         <Calendar />
         {formatRangeLabel(value)}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-64">
-        <div className="flex flex-col gap-1">
-          {PRESETS.map((preset) => {
-            const range = preset.getRange(monthsBack);
-            return (
-              <PresetButton
-                disabled={minDate !== null && range.from < minDate}
-                isActive={isSameRange(range, value)}
-                key={preset.label}
-                label={preset.label}
-                onSelect={handlePreset}
-                range={range}
-              />
-            );
-          })}
-        </div>
+      <PopoverContent align="end" className="w-auto gap-0 overflow-hidden p-0">
+        <div className="flex flex-col sm:flex-row">
+          <div className="flex flex-col justify-between gap-3 border-b p-3 sm:w-44 sm:border-r sm:border-b-0">
+            <div className="flex flex-col gap-1">
+              <span className="px-2 pb-1 font-medium text-muted-foreground text-xs">
+                Atalhos
+              </span>
+              {PRESETS.map((preset) => {
+                const range = preset.getRange(monthsBack);
+                return (
+                  <PresetButton
+                    disabled={minDate !== null && range.from < minDate}
+                    isActive={isSameRange(range, value)}
+                    key={preset.label}
+                    label={preset.label}
+                    onSelect={handleSelectRange}
+                    range={range}
+                  />
+                );
+              })}
+            </div>
 
-        <Separator />
+            {minDate ? (
+              <p className="px-2 text-[0.7rem] text-muted-foreground leading-snug">
+                Disponível a partir de {minDate.toLocaleDateString("pt-BR")}
+              </p>
+            ) : null}
+          </div>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="period-from">De</Label>
-            <Input
-              id="period-from"
-              max={toDateInputValue(value.to)}
-              min={minDate ? toDateInputValue(minDate) : undefined}
-              onChange={handleFromChange}
-              type="date"
-              value={toDateInputValue(value.from)}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="period-to">Até</Label>
-            <Input
-              id="period-to"
-              max={toDateInputValue(maxDate)}
-              min={toDateInputValue(value.from)}
-              onChange={handleToChange}
-              type="date"
-              value={toDateInputValue(value.to)}
-            />
-          </div>
-          {minDate ? (
-            <p className="text-muted-foreground text-xs">
-              Disponível a partir de {minDate.toLocaleDateString("pt-BR")}
-            </p>
-          ) : null}
+          <DateRangeCalendar
+            key={
+              isOpen
+                ? `${value.from.getTime()}-${value.to.getTime()}`
+                : "closed"
+            }
+            maxDate={maxDate}
+            minDate={minDate}
+            onSelectRange={handleSelectRange}
+            value={value}
+          />
         </div>
       </PopoverContent>
     </Popover>

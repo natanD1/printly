@@ -103,7 +103,7 @@ function EmptyFilamentsCatalog({ onBack, onSkip }: EmptyFilamentsCatalogProps) {
     <div className="flex flex-col gap-6">
       <p className="rounded-lg border bg-muted/40 p-4 text-muted-foreground text-sm">
         Ainda não há marcas ou tipos de filamento disponíveis no catálogo. Você
-        pode pular esta etapa e cadastrar seus filamentos depois, em Estoque.
+        pode pular esta etapa e cadastrar seus filamentos depois, em Filamentos.
       </p>
       <div className="flex w-full items-center justify-between gap-3 border-t pt-4">
         {onBack ? (

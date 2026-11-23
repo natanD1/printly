@@ -38,7 +38,7 @@ export function PrinterModelsOverview() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <PrinterModelsToolbar
         onCreate={createPrinterModel}
         onRefresh={fetchPrinterModels}
@@ -49,7 +49,7 @@ export function PrinterModelsOverview() {
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {isLoading ? (
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="min-h-96 w-full flex-1" />
       ) : (
         <DataTable
           columns={columns}

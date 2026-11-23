@@ -45,7 +45,7 @@ export function UsersOverview() {
   const errorMessage = error ?? plansError;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -72,7 +72,7 @@ export function UsersOverview() {
       ) : null}
 
       {isLoading ? (
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="min-h-96 w-full flex-1" />
       ) : (
         <DataTable
           columns={columns}

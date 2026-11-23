@@ -5,7 +5,7 @@ import { type ReactNode, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
 import { NumberField } from "@/components/number-field";
-import { OptionChips } from "@/components/option-chips";
+import { OptionCardPicker } from "@/components/option-card-picker";
 import { OptionalCost } from "@/components/optional-cost";
 import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
@@ -135,11 +135,13 @@ export function PrinterForm({
   return (
     <form className="flex flex-1 flex-col gap-4" onSubmit={submit}>
       <div className="flex flex-col gap-1.5">
-        <Label>Marca</Label>
-        <OptionChips
+        <OptionCardPicker
           emptyMessage="Nenhuma marca de impressora disponível."
+          emptySearchMessage="Nenhuma marca encontrada."
+          label="Marca"
           onSelect={handleSelectBrand}
           options={brandOptions}
+          searchPlaceholder="Pesquisar marca..."
           value={brandId}
         />
         <FieldError message={errors.brandId?.message} />
@@ -147,11 +149,15 @@ export function PrinterForm({
 
       {brandId ? (
         <div className="flex flex-col gap-1.5">
-          <Label>Modelo</Label>
-          <OptionChips
+          <OptionCardPicker
             emptyMessage="Nenhum modelo disponível pra essa marca."
+            emptySearchMessage="Nenhum modelo encontrado."
+            imageSize="lg"
+            key={brandId}
+            label="Modelo"
             onSelect={handleSelectModel}
             options={modelOptions}
+            searchPlaceholder="Pesquisar modelo..."
             value={printerModelId}
           />
           <FieldError message={errors.printerModelId?.message} />

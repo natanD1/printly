@@ -3,7 +3,7 @@ import { AUTH_COOKIE_NAME, SESSION_COOKIE_NAME } from "@/lib/auth-cookie";
 
 const protectedRoutes = [
   "/home",
-  "/estoque",
+  "/filamentos",
   "/impressoras",
   "/configuracoes",
   "/convites",

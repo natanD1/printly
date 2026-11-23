@@ -41,7 +41,7 @@ export function InviteCodesOverview() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader>
@@ -108,7 +108,7 @@ export function InviteCodesOverview() {
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {isLoading ? (
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="min-h-96 w-full flex-1" />
       ) : (
         <DataTable
           columns={columns}

@@ -2,10 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ChangeEvent, MouseEvent, ReactNode } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
 import { NumberField } from "@/components/number-field";
+import { OptionCardPicker } from "@/components/option-card-picker";
 import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,11 +70,8 @@ export function FilamentForm({
   );
 
   const handleSelectBrand = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      const { id } = event.currentTarget.dataset;
-      if (id) {
-        setValue("brandId", id, { shouldValidate: true });
-      }
+    (id: string) => {
+      setValue("brandId", id, { shouldValidate: true });
     },
     [setValue]
   );
@@ -88,8 +86,16 @@ export function FilamentForm({
     [setValue]
   );
 
-  const activeBrands = filamentBrands.filter(
-    (brand) => brand.isActive || brand.id === brandId
+  const brandOptions = useMemo(
+    () =>
+      filamentBrands
+        .filter((brand) => brand.isActive || brand.id === brandId)
+        .map((brand) => ({
+          id: brand.id,
+          image: brand.imageBrand,
+          label: brand.nameBrand,
+        })),
+    [brandId, filamentBrands]
   );
   const activeTypes = filamentTypes.filter(
     (type) => type.isActive || type.id === typeId
@@ -150,43 +156,15 @@ export function FilamentForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label>Marca</Label>
-        <div className="grid grid-cols-3 gap-2">
-          {activeBrands.length ? (
-            activeBrands.map((brand) => (
-              <button
-                className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm transition-colors hover:bg-accent",
-                  brandId === brand.id
-                    ? "border-primary ring-1 ring-primary"
-                    : "border-input"
-                )}
-                data-id={brand.id}
-                key={brand.id}
-                onClick={handleSelectBrand}
-                type="button"
-              >
-                {brand.imageBrand ? (
-                  // biome-ignore lint/performance/noImgElement: preview de base64 vindo da API, sem otimização de imagem aplicável
-                  <img
-                    alt={brand.nameBrand}
-                    className="size-7 shrink-0 rounded-full object-cover"
-                    height={28}
-                    src={`data:image/png;base64,${brand.imageBrand}`}
-                    width={28}
-                  />
-                ) : (
-                  <div className="size-7 shrink-0 rounded-full bg-muted" />
-                )}
-                <span className="truncate">{brand.nameBrand}</span>
-              </button>
-            ))
-          ) : (
-            <p className="col-span-3 text-muted-foreground text-sm">
-              Nenhuma marca cadastrada.
-            </p>
-          )}
-        </div>
+        <OptionCardPicker
+          emptyMessage="Nenhuma marca cadastrada."
+          emptySearchMessage="Nenhuma marca encontrada."
+          label="Marca"
+          onSelect={handleSelectBrand}
+          options={brandOptions}
+          searchPlaceholder="Pesquisar marca..."
+          value={brandId}
+        />
         <FieldError message={errors.brandId?.message} />
       </div>
 

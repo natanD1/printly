@@ -57,7 +57,7 @@ export function ProductsTable({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <ProductsToolbar
         monthsBack={monthsBack}
         onCreate={createProduct}
@@ -71,7 +71,7 @@ export function ProductsTable({
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {isLoading ? (
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="min-h-96 w-full flex-1" />
       ) : (
         <DataTable columns={columns} data={filteredProducts} pageSize={10} />
       )}
