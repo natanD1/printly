@@ -1,3 +1,5 @@
+import type { DocumentProps } from "@react-pdf/renderer";
+import { createElement, type ReactElement } from "react";
 import type { QuoteCompany, QuoteData } from "@/types/quote";
 import { canUseCompanyLogo } from "@/utils/can-use-company-logo";
 import { formatCurrency } from "@/utils/format-currency";
@@ -25,7 +27,10 @@ export function quoteFileName(productName: string): string {
   return `orcamento-${slug || "produto"}.pdf`;
 }
 
-/** react-pdf só aceita PNG/JPG: converte outros formatos (ex: webp) via canvas. */
+/** Logo do sistema (só formas, sem fonte) rasterizado pro rodapé do PDF. */
+const SYSTEM_LOGO_SRC = "/printly-logo-horizontal.svg";
+
+/** react-pdf só aceita PNG/JPG: converte outros formatos (webp, svg) via canvas. */
 function convertToPng(dataUri: string): Promise<string | null> {
   return new Promise((resolve) => {
     const image = new window.Image();
@@ -79,27 +84,34 @@ export async function generateQuotePdf(
     import("@/components/quote-document"),
   ]);
 
-  const [photoSrc, logoSrc] = await Promise.all([
+  // Logo da empresa no orçamento é recurso premium (canUseCompanyLogo); sem
+  // permissão ou sem logo cadastrado, o cabeçalho usa o logo do Printly.
+  const [photoSrc, companyLogoSrc, systemLogoSrc] = await Promise.all([
     toPdfImageSrc(data.productPhoto),
     canUseCompanyLogo() ? toPdfImageSrc(company.logoBase64) : null,
+    convertToPng(SYSTEM_LOGO_SRC),
   ]);
 
   const issued = new Date();
   const validUntil = new Date(issued);
   validUntil.setDate(validUntil.getDate() + VALIDITY_DAYS);
 
-  // Chamada direta (sem hooks): devolve o <Document> que o pdf() espera.
-  const element = QuoteDocument({
+  // Nunca chamar QuoteDocument(...) como função: o React Compiler injeta um hook
+  // (useMemoCache) no componente, que quebra fora de render. createElement deixa
+  // o renderer do react-pdf renderizar o componente.
+  const element = createElement(QuoteDocument, {
     company,
+    isSystemLogo: !companyLogoSrc,
     issueDate: formatDate(issued),
-    logoSrc,
+    logoSrc: companyLogoSrc ?? systemLogoSrc,
     photoSrc,
     productName: data.productName,
     quantity: data.quantity,
+    systemLogoSrc,
     totalLabel: formatCurrency(data.salePrice),
     unitLabel: formatCurrency(data.unitSalePrice),
     validUntil: formatDate(validUntil),
-  });
+  }) as unknown as ReactElement<DocumentProps>;
 
   return await pdf(element).toBlob();
 }

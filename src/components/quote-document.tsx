@@ -13,12 +13,16 @@ export interface QuoteDocumentProps {
     QuoteCompany,
     "email" | "instagram" | "name" | "phone" | "website" | "whatsApp"
   >;
+  /** `true` quando o cabeçalho usa o logo do Printly (sem logo da empresa). */
+  isSystemLogo: boolean;
   issueDate: string;
-  /** Data URI PNG/JPG já pronta (ou `null`). */
+  /** Data URI PNG/JPG já pronta: logo da empresa ou, sem ele, o do Printly. */
   logoSrc: string | null;
   photoSrc: string | null;
   productName: string;
   quantity: number;
+  /** Logo do Printly em PNG pro rodapé (ou `null` se a conversão falhar). */
+  systemLogoSrc: string | null;
   totalLabel: string;
   unitLabel: string;
   validUntil: string;
@@ -29,14 +33,17 @@ const styles = StyleSheet.create({
   companyName: { fontSize: 18, fontWeight: 700 },
   contacts: { color: "#52525b", fontSize: 10, marginTop: 2 },
   footer: {
+    alignItems: "center",
     bottom: 24,
-    color: "#a1a1aa",
-    fontSize: 9,
+    flexDirection: "row",
+    gap: 6,
+    justifyContent: "center",
     left: 40,
     position: "absolute",
     right: 40,
-    textAlign: "center",
   },
+  footerLogo: { height: 14, width: 50 },
+  footerText: { color: "#a1a1aa", fontSize: 9 },
   header: {
     alignItems: "center",
     borderBottomColor: "#e4e4e7",
@@ -63,17 +70,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   rowLabel: { color: "#52525b" },
+  // Logo horizontal do Printly (916×256): mesma altura visual, largura proporcional.
+  systemLogo: { height: 32, width: 115 },
   title: { fontSize: 13, fontWeight: 700, marginTop: 24 },
   total: { fontSize: 14, fontWeight: 700 },
 });
 
 export function QuoteDocument({
   company,
+  isSystemLogo,
   issueDate,
   logoSrc,
   photoSrc,
   productName,
   quantity,
+  systemLogoSrc,
   totalLabel,
   unitLabel,
   validUntil,
@@ -90,7 +101,12 @@ export function QuoteDocument({
     <Document title={`Orçamento - ${productName}`}>
       <Page size="A4" style={styles.body}>
         <View style={styles.header}>
-          {logoSrc ? <Image src={logoSrc} style={styles.logo} /> : null}
+          {logoSrc ? (
+            <Image
+              src={logoSrc}
+              style={isSystemLogo ? styles.systemLogo : styles.logo}
+            />
+          ) : null}
           <View>
             <Text style={styles.companyName}>{company.name}</Text>
             {contacts.map((line) => (
@@ -124,9 +140,14 @@ export function QuoteDocument({
           </View>
         </View>
 
-        <Text fixed style={styles.footer}>
-          Gerado com Printly
-        </Text>
+        <View fixed style={styles.footer}>
+          <Text style={styles.footerText}>Gerado com</Text>
+          {systemLogoSrc ? (
+            <Image src={systemLogoSrc} style={styles.footerLogo} />
+          ) : (
+            <Text style={styles.footerText}>Printly</Text>
+          )}
+        </View>
       </Page>
     </Document>
   );

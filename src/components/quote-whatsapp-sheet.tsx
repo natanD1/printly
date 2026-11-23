@@ -35,10 +35,6 @@ type PdfState =
 const FALLBACK_NOTICE =
   "PDF baixado: arraste o arquivo para a conversa do WhatsApp";
 
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === "AbortError";
-}
-
 /**
  * Nome e telefone do cliente vivem só neste estado: nunca vão pra API,
  * localStorage nem log. Tudo é descartado quando o painel fecha.
@@ -54,7 +50,7 @@ export function QuoteWhatsappSheet({
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const [pdf, setPdf] = useState<PdfState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
-  const [shareError, setShareError] = useState<string | null>(null);
+  const [webLink, setWebLink] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,14 +60,14 @@ export function QuoteWhatsappSheet({
     setCustomerName("");
     setCustomerPhone("");
     setPhoneError(undefined);
-    setShareError(null);
+    setWebLink(null);
     setNotice(null);
     setPdf({ status: "loading" });
     setAttempt(0);
   }, [open]);
 
   // Pré-gera o PDF em segundo plano pra o clique em "Enviar" ser síncrono
-  // (navigator.share exige gesto do usuário recente).
+  // (o download e a abertura do app precisam do gesto do usuário).
   // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` só força nova tentativa.
   useEffect(() => {
     if (!open || isCompanyLoading) {
@@ -92,7 +88,8 @@ export function QuoteWhatsappSheet({
           });
         }
       })
-      .catch(() => {
+      .catch((caughtError: unknown) => {
+        console.error("Falha ao gerar o PDF do orçamento", caughtError);
         if (!cancelled) {
           setPdf({ status: "error" });
         }
@@ -126,7 +123,7 @@ export function QuoteWhatsappSheet({
     []
   );
 
-  // Sem await antes de navigator.share: preserva a ativação do clique.
+  // Sem await no clique: preserva a ativação do usuário pro download e o app.
   const handleSend = useCallback(() => {
     if (pdf.status !== "ready") {
       return;
@@ -139,7 +136,6 @@ export function QuoteWhatsappSheet({
       return;
     }
 
-    setShareError(null);
     setNotice(null);
 
     const normalized = normalizePhone(parsed.data.customerPhone ?? "");
@@ -150,32 +146,19 @@ export function QuoteWhatsappSheet({
       total: quote.salePrice,
     });
 
-    if (
-      typeof navigator.share === "function" &&
-      navigator.canShare?.({ files: [file] })
-    ) {
-      const reportError = (error: unknown) => {
-        if (!isAbortError(error)) {
-          setShareError("Não foi possível compartilhar. Tente novamente.");
-        }
-      };
-      try {
-        navigator
-          .share({ files: [file], text: message, title: file.name })
-          .catch(reportError);
-      } catch (error) {
-        reportError(error);
-      }
-      return;
-    }
-
+    // Sempre WhatsApp direto (sem folha de compartilhar do sistema): baixa o
+    // PDF e abre a conversa. Celular usa wa.me (o sistema abre o app);
+    // desktop usa whatsapp:// pra abrir o app instalado, não a página do wa.me.
     const phone = normalized.ok ? normalized.phone : null;
-    window.open(
-      buildWhatsappLink(message, phone),
-      "_blank",
-      "noopener,noreferrer"
-    );
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+
     downloadBlob(file, file.name);
+    window.location.href = buildWhatsappLink(
+      message,
+      phone,
+      isTouchDevice ? "universal" : "app"
+    );
+    setWebLink(buildWhatsappLink(message, phone, "web"));
     setNotice(FALLBACK_NOTICE);
   }, [pdf, customerName, customerPhone, quote]);
 
@@ -230,8 +213,17 @@ export function QuoteWhatsappSheet({
             </div>
           ) : null}
 
-          <FieldError message={shareError ?? undefined} />
           {notice ? <p className="text-sm">{notice}</p> : null}
+          {webLink ? (
+            <a
+              className="cursor-pointer text-sm underline underline-offset-4"
+              href={webLink}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              O app não abriu? Abrir no WhatsApp Web
+            </a>
+          ) : null}
         </div>
 
         <SideSheetActions>

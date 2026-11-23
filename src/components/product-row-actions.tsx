@@ -123,7 +123,8 @@ export function ProductRowActions({
     try {
       const blob = await generateQuotePdf(quote, company);
       downloadBlob(blob, quoteFileName(quote.productName));
-    } catch {
+    } catch (caughtError) {
+      console.error("Falha ao gerar o PDF do orçamento", caughtError);
       setActionError({
         message: "Não foi possível gerar o PDF. Tente novamente.",
         title: "Erro ao gerar orçamento",
@@ -146,7 +147,7 @@ export function ProductRowActions({
           <span className="sr-only">Abrir ações</span>
           <MoreHorizontal />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align="start" className="w-auto whitespace-nowrap">
           <DropdownMenuItem onClick={handleOpenView}>
             <Eye />
             Visualizar
