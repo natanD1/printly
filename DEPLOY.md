@@ -69,10 +69,13 @@ EOF
 
 ```
 printly.app.br {
+    # HSTS: o browser passa a recusar HTTP pra este domínio por 1 ano (senha e cookies só trafegam em HTTPS).
+    header Strict-Transport-Security "max-age=31536000"
     reverse_proxy printly-frontend:3000
 }
 
 api.printly.app.br {
+    header Strict-Transport-Security "max-age=31536000"
     reverse_proxy printly-backend:8080
 }
 ```
@@ -110,7 +113,8 @@ services:
       Jwt__Secret: ${JWT_SECRET}
       Jwt__Issuer: Printly.WebApi
       Jwt__Audience: Printly.Client
-      Jwt__ExpirationMinutes: "60"
+      Jwt__AccessTokenMinutes: "15"   # access token (JWT) curto; renovado pelo refresh token
+      Jwt__RefreshTokenDays: "7"      # sessão máxima sem uso (refresh token opaco, rotacionado)
     depends_on:
       - mysql
 
