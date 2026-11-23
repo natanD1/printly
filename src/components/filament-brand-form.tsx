@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { FileInput } from "@/components/file-input";
 import { SideSheetActions } from "@/components/side-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,12 +73,7 @@ export function FilamentBrandForm({
             width={96}
           />
         ) : null}
-        <Input
-          accept="image/*"
-          id="image"
-          onChange={handleImageChange}
-          type="file"
-        />
+        <FileInput accept="image/*" id="image" onChange={handleImageChange} />
       </div>
 
       <SideSheetActions>

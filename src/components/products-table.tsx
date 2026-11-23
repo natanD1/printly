@@ -14,6 +14,7 @@ interface ProductsTableProps {
   deleteProduct: (id: string) => Promise<void>;
   error: string | null;
   isLoading: boolean;
+  monthsBack: number | null;
   onRangeChange: (range: DateRange) => void;
   onRefresh: () => void;
   products: Product[];
@@ -27,6 +28,7 @@ export function ProductsTable({
   deleteProduct,
   error,
   isLoading,
+  monthsBack,
   onRangeChange,
   onRefresh,
   products,
@@ -57,6 +59,7 @@ export function ProductsTable({
   return (
     <div className="flex flex-col gap-4">
       <ProductsToolbar
+        monthsBack={monthsBack}
         onCreate={createProduct}
         onRangeChange={onRangeChange}
         onRefresh={onRefresh}

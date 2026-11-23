@@ -5,6 +5,8 @@ import { PrinterCard } from "@/components/printer-card";
 import { PrinterFormDialog } from "@/components/printer-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UpgradeNotice } from "@/components/upgrade-notice";
+import { useEntitlement } from "@/hooks/use-entitlement";
 import { usePrinters } from "@/hooks/use-printers";
 
 const SKELETON_KEYS = ["skeleton-1", "skeleton-2", "skeleton-3"];
@@ -19,6 +21,7 @@ export function PrintersOverview() {
     printers,
     updatePrinter,
   } = usePrinters();
+  const { canCreate, limit } = useEntitlement("MaxPrinters");
 
   return (
     <div className="flex flex-col gap-4">
@@ -35,7 +38,7 @@ export function PrintersOverview() {
           <PrinterFormDialog
             onSubmit={createPrinter}
             trigger={
-              <Button size="lg">
+              <Button disabled={!canCreate} size="lg">
                 <Plus />
                 Adicionar impressora
               </Button>
@@ -43,6 +46,12 @@ export function PrintersOverview() {
           />
         </div>
       </div>
+
+      {canCreate ? null : (
+        <UpgradeNotice
+          message={`Seu plano permite até ${limit} ${limit === 1 ? "impressora" : "impressoras"}. Fale com o suporte para mudar de plano.`}
+        />
+      )}
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 

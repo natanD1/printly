@@ -16,6 +16,7 @@ export interface AuthSession {
 }
 
 export interface ApiErrorResponse {
+  code?: string;
   message: string;
 }
 

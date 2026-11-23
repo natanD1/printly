@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useCallback } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import {
   deleteFilamentRequest,
   updateFilamentRequest,
@@ -11,6 +11,7 @@ import {
   createFilamentRequest,
   getFilamentsRequest,
 } from "@/app/api/filaments/request";
+import { MY_PLAN_KEY } from "@/hooks/use-my-plan";
 import type { FilamentSchema } from "@/schemas/filament-schema";
 import type { ApiErrorResponse } from "@/types/auth";
 import type { Filament } from "@/types/filament";
@@ -32,6 +33,7 @@ export function useFilaments() {
     isLoading,
     mutate: mutateFilaments,
   } = useSWR<Filament[]>(FILAMENTS_KEY, getFilamentsRequest);
+  const { mutate: mutateAll } = useSWRConfig();
 
   const createFilament = useCallback(
     async (formData: FilamentSchema) => {
@@ -40,11 +42,12 @@ export function useFilaments() {
         await mutateFilaments((current) => [filament, ...(current ?? [])], {
           revalidate: false,
         });
+        await mutateAll(MY_PLAN_KEY);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutateFilaments]
+    [mutateAll, mutateFilaments]
   );
 
   const updateFilament = useCallback(
@@ -71,11 +74,12 @@ export function useFilaments() {
           (current) => current?.filter((item) => item.id !== id),
           { revalidate: false }
         );
+        await mutateAll(MY_PLAN_KEY);
       } catch (caughtError) {
         throw new Error(getErrorMessage(caughtError), { cause: caughtError });
       }
     },
-    [mutateFilaments]
+    [mutateAll, mutateFilaments]
   );
 
   return {

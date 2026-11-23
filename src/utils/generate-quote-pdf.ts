@@ -1,7 +1,6 @@
 import type { DocumentProps } from "@react-pdf/renderer";
 import { createElement, type ReactElement } from "react";
 import type { QuoteCompany, QuoteData } from "@/types/quote";
-import { canUseCompanyLogo } from "@/utils/can-use-company-logo";
 import { formatCurrency } from "@/utils/format-currency";
 
 const VALIDITY_DAYS = 7;
@@ -71,24 +70,32 @@ async function toPdfImageSrc(base64: string | null): Promise<string | null> {
   return await convertToPng(`data:image/webp;base64,${raw}`);
 }
 
+export interface QuotePdfOptions {
+  /** `false`: sem o rodapé "Gerado com" + logo do Printly (regra `RemoveBrandingFooter`). */
+  showBrandingFooter: boolean;
+  /** `false`: cabeçalho usa o logo do Printly em vez do logo da empresa (regra `CompanyLogoInQuote`). */
+  showCompanyLogo: boolean;
+}
+
 /**
  * Gera o PDF do orçamento só no browser: `@react-pdf/renderer` nunca entra no SSR
  * (import dinâmico). Recebe apenas `QuoteData`, então custo/margem não chegam aqui.
  */
 export async function generateQuotePdf(
   data: QuoteData,
-  company: QuoteCompany
+  company: QuoteCompany,
+  options: QuotePdfOptions
 ): Promise<Blob> {
   const [{ pdf }, { QuoteDocument }] = await Promise.all([
     import("@react-pdf/renderer"),
     import("@/components/quote-document"),
   ]);
 
-  // Logo da empresa no orçamento é recurso premium (canUseCompanyLogo); sem
+  // Logo da empresa no orçamento depende do plano (`showCompanyLogo`); sem
   // permissão ou sem logo cadastrado, o cabeçalho usa o logo do Printly.
   const [photoSrc, companyLogoSrc, systemLogoSrc] = await Promise.all([
     toPdfImageSrc(data.productPhoto),
-    canUseCompanyLogo() ? toPdfImageSrc(company.logoBase64) : null,
+    options.showCompanyLogo ? toPdfImageSrc(company.logoBase64) : null,
     convertToPng(SYSTEM_LOGO_SRC),
   ]);
 
@@ -107,6 +114,7 @@ export async function generateQuotePdf(
     photoSrc,
     productName: data.productName,
     quantity: data.quantity,
+    showBrandingFooter: options.showBrandingFooter,
     systemLogoSrc,
     totalLabel: formatCurrency(data.salePrice),
     unitLabel: formatCurrency(data.unitSalePrice),

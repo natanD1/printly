@@ -1,7 +1,7 @@
 import { parseBrazilianDate } from "@/utils/parse-brazilian-date";
 
-/** Quantos meses antes do atual a home deixa consultar (limite só de UX; o backend aceita qualquer período). */
-const HOME_MONTHS_BACK = 3;
+/** Início do "Todo o período" quando o plano não limita o histórico: 12 meses antes do atual (só atalho de UX). */
+const UNLIMITED_RANGE_MONTHS_BACK = 12;
 
 /** Período em dias locais; `to` é inclusivo. */
 export interface DateRange {
@@ -47,14 +47,28 @@ export function previousMonthRange(): DateRange {
   };
 }
 
-/** Primeiro dia que a home deixa consultar: dia 1 de (mês atual − 3). */
-export function homeMinDate(): Date {
+/**
+ * Primeiro dia que a home deixa consultar: dia 1 de (mês atual − `monthsBack`).
+ * `monthsBack` vem do plano (0 = só o mês atual); `null` = sem mínimo.
+ */
+export function homeMinDate(monthsBack: number | null): Date | null {
+  if (monthsBack === null) {
+    return null;
+  }
+
   const now = today();
-  return new Date(now.getFullYear(), now.getMonth() - HOME_MONTHS_BACK, 1);
+  return new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
 }
 
-export function homeFullRange(): DateRange {
-  return { from: homeMinDate(), to: today() };
+/** "Todo o período": do mínimo do plano até hoje; sem mínimo, os últimos 12 meses. */
+export function homeFullRange(monthsBack: number | null): DateRange {
+  return {
+    from:
+      homeMinDate(monthsBack) ??
+      homeMinDate(UNLIMITED_RANGE_MONTHS_BACK) ??
+      today(),
+    to: today(),
+  };
 }
 
 export function isSameRange(a: DateRange, b: DateRange): boolean {

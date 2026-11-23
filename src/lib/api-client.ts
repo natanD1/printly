@@ -3,10 +3,12 @@ import type { ApiErrorResponse } from "@/types/auth";
 
 export class ApiError extends Error {
   readonly status: number;
+  readonly code?: string;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
     this.name = "ApiError";
   }
 }
@@ -48,7 +50,8 @@ export async function apiFetch<T>(
       .catch(() => null)) as ApiErrorResponse | null;
     throw new ApiError(
       response.status,
-      errorBody?.message ?? "Erro inesperado ao comunicar com a API"
+      errorBody?.message ?? "Erro inesperado ao comunicar com a API",
+      errorBody?.code
     );
   }
 

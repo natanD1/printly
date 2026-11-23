@@ -25,22 +25,29 @@ import {
 } from "@/utils/date-filters";
 
 interface ProductsPeriodFilterProps {
+  /** Meses anteriores ao atual que o plano deixa consultar (`null` = sem limite). */
+  monthsBack: number | null;
   onChange: (range: DateRange) => void;
   value: DateRange;
 }
 
 const PRESETS = [
-  { getRange: currentMonthRange, label: "Este mês" },
-  { getRange: previousMonthRange, label: "Mês passado" },
+  { getRange: () => currentMonthRange(), label: "Este mês" },
+  { getRange: () => previousMonthRange(), label: "Mês passado" },
   { getRange: homeFullRange, label: "Todo o período" },
-] as const;
+] as const satisfies readonly {
+  getRange: (monthsBack: number | null) => DateRange;
+  label: string;
+}[];
 
 function PresetButton({
+  disabled,
   isActive,
   label,
   onSelect,
   range,
 }: {
+  disabled: boolean;
   isActive: boolean;
   label: string;
   onSelect: (range: DateRange) => void;
@@ -51,6 +58,7 @@ function PresetButton({
   return (
     <Button
       className="justify-start"
+      disabled={disabled}
       onClick={handleClick}
       variant={isActive ? "secondary" : "ghost"}
     >
@@ -60,11 +68,12 @@ function PresetButton({
 }
 
 export function ProductsPeriodFilter({
+  monthsBack,
   onChange,
   value,
 }: ProductsPeriodFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const minDate = homeMinDate();
+  const minDate = homeMinDate(monthsBack);
   const maxDate = today();
 
   const handlePreset = useCallback(
@@ -79,11 +88,11 @@ export function ProductsPeriodFilter({
     (event: ChangeEvent<HTMLInputElement>) => {
       const from = fromDateInputValue(event.target.value);
 
-      if (from && from >= homeMinDate() && from <= value.to) {
+      if (from && (!minDate || from >= minDate) && from <= value.to) {
         onChange({ from, to: value.to });
       }
     },
-    [onChange, value.to]
+    [minDate, onChange, value.to]
   );
 
   const handleToChange = useCallback(
@@ -106,9 +115,10 @@ export function ProductsPeriodFilter({
       <PopoverContent align="end" className="w-64">
         <div className="flex flex-col gap-1">
           {PRESETS.map((preset) => {
-            const range = preset.getRange();
+            const range = preset.getRange(monthsBack);
             return (
               <PresetButton
+                disabled={minDate !== null && range.from < minDate}
                 isActive={isSameRange(range, value)}
                 key={preset.label}
                 label={preset.label}
@@ -127,7 +137,7 @@ export function ProductsPeriodFilter({
             <Input
               id="period-from"
               max={toDateInputValue(value.to)}
-              min={toDateInputValue(minDate)}
+              min={minDate ? toDateInputValue(minDate) : undefined}
               onChange={handleFromChange}
               type="date"
               value={toDateInputValue(value.from)}
@@ -144,9 +154,11 @@ export function ProductsPeriodFilter({
               value={toDateInputValue(value.to)}
             />
           </div>
-          <p className="text-muted-foreground text-xs">
-            Disponível a partir de {minDate.toLocaleDateString("pt-BR")}
-          </p>
+          {minDate ? (
+            <p className="text-muted-foreground text-xs">
+              Disponível a partir de {minDate.toLocaleDateString("pt-BR")}
+            </p>
+          ) : null}
         </div>
       </PopoverContent>
     </Popover>

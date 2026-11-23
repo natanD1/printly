@@ -5,6 +5,7 @@ import { ModalCommunication } from "@/components/modal-communication";
 import { PrinterForm } from "@/components/printer-form";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useEntitlement } from "@/hooks/use-entitlement";
 import { usePrinterBrands } from "@/hooks/use-printer-brands";
 import { usePrinterModels } from "@/hooks/use-printer-models";
 import { usePrinters } from "@/hooks/use-printers";
@@ -30,16 +31,27 @@ function toFormValues(printer: Printer): PrinterSchema {
 }
 
 interface EmptyPrinterCatalogProps {
+  message: string;
   onBack?: () => void;
   onSkip: () => void;
 }
 
-function EmptyPrinterCatalog({ onBack, onSkip }: EmptyPrinterCatalogProps) {
+const EMPTY_CATALOG_MESSAGE =
+  "Ainda não há impressoras no catálogo. Você pode pular esta etapa e cadastrar sua impressora depois, em Impressoras.";
+
+// Plano padrão com MaxPrinters = 0 (ou já no limite): sem "Pular" o usuário novo ficaria preso nesta etapa.
+const PLAN_LIMIT_MESSAGE =
+  "Seu plano não permite cadastrar mais impressoras. Você pode pular esta etapa e continuar.";
+
+function EmptyPrinterCatalog({
+  message,
+  onBack,
+  onSkip,
+}: EmptyPrinterCatalogProps) {
   return (
     <div className="flex flex-col gap-6">
       <p className="rounded-lg border bg-muted/40 p-4 text-muted-foreground text-sm">
-        Ainda não há impressoras no catálogo. Você pode pular esta etapa e
-        cadastrar sua impressora depois, em Impressoras.
+        {message}
       </p>
       <div className="flex w-full items-center justify-between gap-3 border-t pt-4">
         {onBack ? (
@@ -72,6 +84,7 @@ export function OnboardingPrinterStep({
   } = usePrinters();
   const { isLoading: isBrandsLoading, printerBrands } = usePrinterBrands();
   const { isLoading: isModelsLoading, printerModels } = usePrinterModels();
+  const { canCreate: canCreatePrinter } = useEntitlement("MaxPrinters");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isSubmittingRef = useRef<boolean>(false as boolean);
 
@@ -163,6 +176,14 @@ export function OnboardingPrinterStep({
         <Spinner className="size-6 text-muted-foreground" />
       </div>
     );
+  } else if (!(existingPrinter || canCreatePrinter)) {
+    content = (
+      <EmptyPrinterCatalog
+        message={PLAN_LIMIT_MESSAGE}
+        onBack={onBack}
+        onSkip={handleSkip}
+      />
+    );
   } else if (hasActiveCatalog) {
     content = (
       <PrinterForm
@@ -174,7 +195,13 @@ export function OnboardingPrinterStep({
       />
     );
   } else {
-    content = <EmptyPrinterCatalog onBack={onBack} onSkip={handleSkip} />;
+    content = (
+      <EmptyPrinterCatalog
+        message={EMPTY_CATALOG_MESSAGE}
+        onBack={onBack}
+        onSkip={handleSkip}
+      />
+    );
   }
 
   return (

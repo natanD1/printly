@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BadgeDollarSign,
   Box,
   Heart,
   Home,
@@ -9,9 +10,11 @@ import {
   MessageSquare,
   Palette,
   Printer3d,
+  Rocket,
   Settings,
   Tags,
   Ticket,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +39,7 @@ const generalNavItems = [
   { icon: Home, title: "Home", url: "/home" },
   { icon: Box, title: "Estoque", url: "/estoque" },
   { icon: Printer3d, title: "Impressoras", url: "/impressoras" },
+  { icon: Rocket, title: "Planos", url: "/assinatura" },
 ];
 
 const adminNavItems = [
@@ -49,6 +53,8 @@ const adminNavItems = [
     url: "/modelos-impressora",
   },
   { icon: MessageSquare, title: "Feedbacks", url: "/feedbacks" },
+  { icon: BadgeDollarSign, title: "Gerenciar planos", url: "/planos" },
+  { icon: Users, title: "Usuários", url: "/usuarios" },
 ];
 
 export function AppSidebar() {
