@@ -10,7 +10,9 @@ const layerLinesStyle: CSSProperties = {
 export function AuthArt() {
   return (
     <aside
-      className="relative hidden flex-col justify-between overflow-hidden bg-brand-ink p-12 text-white lg:flex xl:p-16"
+      // Preso na altura da tela: o formulário (barra de força da senha) cresce
+      // e rola sozinho, sem esticar o painel nem mover o texto.
+      className="relative hidden flex-col justify-between overflow-hidden bg-brand-ink p-12 text-white lg:sticky lg:top-0 lg:flex lg:h-svh lg:self-start xl:p-16"
       style={layerLinesStyle}
     >
       <Image

@@ -12,6 +12,7 @@ const protectedRoutes = [
   "/marcas-impressora",
   "/modelos-impressora",
   "/feedbacks",
+  "/onboarding",
 ];
 const publicRoutes = ["/auth"];
 

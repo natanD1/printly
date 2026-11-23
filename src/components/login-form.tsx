@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +25,9 @@ export function LoginForm() {
 
   const onSubmit = handleSubmit(async (data) => {
     await login(data)
-      .then(() => router.push("/home"))
+      .then((user) =>
+        router.push(user.onboardingCompleted ? "/home" : "/onboarding")
+      )
       .catch(() => null);
   });
 
@@ -44,11 +47,10 @@ export function LoginForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">Senha</Label>
-        <Input
+        <PasswordInput
           autoComplete="current-password"
           className="h-10"
           id="password"
-          type="password"
           {...register("password")}
         />
         <FieldError message={errors.password?.message} />

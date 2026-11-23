@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { ChangeEvent, MouseEvent } from "react";
+import type { ChangeEvent, MouseEvent, ReactNode } from "react";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { FieldError } from "@/components/field-error";
@@ -19,6 +19,7 @@ import { type FilamentSchema, filamentSchema } from "@/schemas/filament-schema";
 interface FilamentFormProps {
   defaultValues?: FilamentSchema;
   onSubmit: (data: FilamentSchema) => Promise<void>;
+  renderActions?: (state: { isSubmitting: boolean }) => ReactNode;
   submitLabel: string;
 }
 
@@ -36,6 +37,7 @@ const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
 export function FilamentForm({
   defaultValues,
   onSubmit,
+  renderActions,
   submitLabel,
 }: FilamentFormProps) {
   const { filamentBrands } = useFilamentBrands();
@@ -217,14 +219,18 @@ export function FilamentForm({
         <FieldError message={errors.typeId?.message} />
       </div>
 
-      <SideSheetActions>
-        <SheetClose render={<Button type="button" variant="outline" />}>
-          Cancelar
-        </SheetClose>
-        <Button disabled={isSubmitting} type="submit">
-          {submitLabel}
-        </Button>
-      </SideSheetActions>
+      {renderActions ? (
+        renderActions({ isSubmitting })
+      ) : (
+        <SideSheetActions>
+          <SheetClose render={<Button type="button" variant="outline" />}>
+            Cancelar
+          </SheetClose>
+          <Button disabled={isSubmitting} type="submit">
+            {submitLabel}
+          </Button>
+        </SideSheetActions>
+      )}
     </form>
   );
 }

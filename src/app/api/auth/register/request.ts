@@ -5,10 +5,12 @@ import type { AuthUserResponse } from "@/types/auth";
 export async function registerRequest(
   credentials: RegisterSchema
 ): Promise<AuthUserResponse> {
-  const response = await api.post<AuthUserResponse>(
-    "/auth/register",
-    credentials
-  );
+  const response = await api.post<AuthUserResponse>("/auth/register", {
+    email: credentials.email,
+    inviteCode: credentials.inviteCode,
+    name: credentials.name,
+    password: credentials.password,
+  });
 
   return response.data;
 }

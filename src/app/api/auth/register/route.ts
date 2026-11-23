@@ -19,7 +19,12 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     const session = await apiFetch<AuthSession>("/auth/register", {
-      body: parsedBody.data,
+      body: {
+        email: parsedBody.data.email,
+        inviteCode: parsedBody.data.inviteCode,
+        name: parsedBody.data.name,
+        password: parsedBody.data.password,
+      },
       method: "POST",
     });
 
