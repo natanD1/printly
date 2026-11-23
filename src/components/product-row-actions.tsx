@@ -2,16 +2,19 @@
 
 import {
   Eye,
+  FileText,
+  MessageCircle,
   MoreHorizontal,
   PackageCheck,
   Pencil,
   Trash2,
   Undo2,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ModalCommunication } from "@/components/modal-communication";
 import { ProductDetailDialog } from "@/components/product-detail-dialog";
 import { ProductFormDialog } from "@/components/product-form-dialog";
+import { QuoteWhatsappSheet } from "@/components/quote-whatsapp-sheet";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,8 +22,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuoteCompany } from "@/hooks/use-quote-company";
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { Product } from "@/types/product";
+import {
+  downloadBlob,
+  generateQuotePdf,
+  quoteFileName,
+} from "@/utils/generate-quote-pdf";
+import { toQuoteData } from "@/utils/to-quote-data";
 
 interface ProductRowActionsProps {
   onDelete: (id: string) => Promise<void>;
@@ -49,6 +59,10 @@ export function ProductRowActions({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingProduced, setIsTogglingProduced] = useState(false);
+  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const { company, isLoading: isCompanyLoading } = useQuoteCompany();
+  const quote = useMemo(() => toQuoteData(product), [product]);
   const [actionError, setActionError] = useState<ActionError | null>(null);
 
   const handleUpdate = useCallback(
@@ -100,6 +114,26 @@ export function ProductRowActions({
     }
   }, [product.id, product.isProduced, onSetProduced]);
 
+  const handleOpenWhatsapp = useCallback(() => {
+    setIsWhatsappOpen(true);
+  }, []);
+
+  const handleGeneratePdf = useCallback(async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const blob = await generateQuotePdf(quote, company);
+      downloadBlob(blob, quoteFileName(quote.productName));
+    } catch (caughtError) {
+      console.error("Falha ao gerar o PDF do orçamento", caughtError);
+      setActionError({
+        message: "Não foi possível gerar o PDF. Tente novamente.",
+        title: "Erro ao gerar orçamento",
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  }, [quote, company]);
+
   const handleErrorOpenChange = useCallback((isOpen: boolean) => {
     if (!isOpen) {
       setActionError(null);
@@ -113,7 +147,7 @@ export function ProductRowActions({
           <span className="sr-only">Abrir ações</span>
           <MoreHorizontal />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align="start" className="w-auto whitespace-nowrap">
           <DropdownMenuItem onClick={handleOpenView}>
             <Eye />
             Visualizar
@@ -130,6 +164,17 @@ export function ProductRowActions({
             {product.isProduced
               ? "Voltar para orçamento"
               : "Marcar como produzido"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={isGeneratingPdf || isCompanyLoading}
+            onClick={handleGeneratePdf}
+          >
+            <FileText />
+            {isGeneratingPdf ? "Gerando PDF…" : "Gerar orçamento (PDF)"}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleOpenWhatsapp}>
+            <MessageCircle />
+            Enviar por WhatsApp
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleOpenDelete} variant="destructive">
             <Trash2 />
@@ -149,6 +194,12 @@ export function ProductRowActions({
         onSubmit={handleUpdate}
         open={isEditOpen}
         product={product}
+      />
+
+      <QuoteWhatsappSheet
+        onOpenChange={setIsWhatsappOpen}
+        open={isWhatsappOpen}
+        quote={quote}
       />
 
       <ModalCommunication
