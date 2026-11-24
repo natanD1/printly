@@ -5,6 +5,7 @@ import {
   Heart,
   Home,
   Layers,
+  Lock,
   LogOut,
   MessageSquare,
   Palette,
@@ -12,6 +13,7 @@ import {
   Rocket,
   Settings,
   Spool,
+  Store,
   Tags,
   Ticket,
   Users,
@@ -33,12 +35,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
+import { useEntitlement } from "@/hooks/use-entitlement";
 import { Separator } from "./ui/separator";
 
 const generalNavItems = [
   { icon: Home, title: "Home", url: "/home" },
   { icon: Spool, title: "Filamentos", url: "/filamentos" },
   { icon: Printer3d, title: "Impressoras", url: "/impressoras" },
+  { icon: Store, title: "Vitrine", url: "/vitrine" },
   { icon: Rocket, title: "Planos", url: "/assinatura" },
 ];
 
@@ -61,6 +65,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, user } = useAuth();
+  const { enabled: isShowcaseEnabled } = useEntitlement("ShowcaseEnabled");
 
   const handleLogout = useCallback(() => {
     logout()
@@ -106,18 +111,32 @@ export function AppSidebar() {
           <SidebarGroupLabel>Geral</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {generalNavItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    isActive={pathname === item.url}
-                    render={<Link href={item.url} />}
-                    tooltip={item.title}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {generalNavItems.map((item) => {
+                const isLocked = item.url === "/vitrine" && !isShowcaseEnabled;
+
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      isActive={pathname === item.url}
+                      render={<Link href={item.url} />}
+                      tooltip={
+                        isLocked
+                          ? `${item.title} (disponível em planos superiores)`
+                          : item.title
+                      }
+                    >
+                      <item.icon />
+                      <span className="truncate">{item.title}</span>
+                      {isLocked ? (
+                        <Lock
+                          aria-hidden="true"
+                          className="ml-auto size-3.5! text-muted-foreground group-data-[collapsible=icon]:hidden"
+                        />
+                      ) : null}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

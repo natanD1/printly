@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { UserRowActions } from "@/components/user-row-actions";
 import type { ManagedUser, Plan } from "@/types/plan";
+import type { AdminShowcase } from "@/types/showcase";
 import { parseBrazilianDate } from "@/utils/parse-brazilian-date";
 
 function formatDateTime(value: string): string {
@@ -15,7 +16,9 @@ function formatDateTime(value: string): string {
 
 export function buildUsersColumns(
   plans: Plan[],
-  onChangePlan: (userId: string, planId: string) => Promise<void>
+  onChangePlan: (userId: string, planId: string) => Promise<void>,
+  showcasesByUser: Map<string, AdminShowcase>,
+  onSetShowcaseBlocked: (id: string, isBlocked: boolean) => Promise<void>
 ): ColumnDef<ManagedUser>[] {
   return [
     {
@@ -48,7 +51,9 @@ export function buildUsersColumns(
       cell: ({ row }) => (
         <UserRowActions
           onChangePlan={onChangePlan}
+          onSetShowcaseBlocked={onSetShowcaseBlocked}
           plans={plans}
+          showcase={showcasesByUser.get(row.original.id)}
           user={row.original}
         />
       ),

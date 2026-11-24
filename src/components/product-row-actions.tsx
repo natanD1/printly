@@ -7,9 +7,11 @@ import {
   MoreHorizontal,
   PackageCheck,
   Pencil,
+  Store,
   Trash2,
   Undo2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { ModalCommunication } from "@/components/modal-communication";
 import { ProductDetailDialog } from "@/components/product-detail-dialog";
@@ -22,8 +24,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEntitlement } from "@/hooks/use-entitlement";
 import { useQuoteBranding } from "@/hooks/use-quote-branding";
 import { useQuoteCompany } from "@/hooks/use-quote-company";
+import { getShowcaseErrorStatus, useShowcase } from "@/hooks/use-showcase";
 import type { ProductSchema } from "@/schemas/product-schema";
 import type { Product } from "@/types/product";
 import {
@@ -70,6 +74,12 @@ export function ProductRowActions({
   } = useQuoteBranding();
   const quote = useMemo(() => toQuoteData(product), [product]);
   const [actionError, setActionError] = useState<ActionError | null>(null);
+  const router = useRouter();
+  const { enabled: isShowcaseEnabled } = useEntitlement("ShowcaseEnabled");
+  const canPublishToShowcase = product.isProduced && isShowcaseEnabled;
+  const { addItems, showcase } = useShowcase({ enabled: canPublishToShowcase });
+  const [isPublishingToShowcase, setIsPublishingToShowcase] = useState(false);
+  const [isPublishedToShowcase, setIsPublishedToShowcase] = useState(false);
 
   const handleUpdate = useCallback(
     (data: ProductSchema) => onUpdate(product.id, data),
@@ -119,6 +129,38 @@ export function ProductRowActions({
       setIsTogglingProduced(false);
     }
   }, [product.id, product.isProduced, onSetProduced]);
+
+  // Sem vitrine ainda (ou 404 do backend), leva pra tela de criação.
+  const handlePublishToShowcase = useCallback(async () => {
+    if (showcase?.exists === false) {
+      router.push("/vitrine");
+      return;
+    }
+
+    setIsPublishingToShowcase(true);
+    try {
+      await addItems([product.id]);
+      setIsPublishedToShowcase(true);
+    } catch (caughtError) {
+      if (getShowcaseErrorStatus(caughtError) === 404) {
+        router.push("/vitrine");
+        return;
+      }
+
+      setActionError({
+        message: toErrorMessage(caughtError),
+        title: "Erro ao publicar na vitrine",
+      });
+    } finally {
+      setIsPublishingToShowcase(false);
+    }
+  }, [addItems, product.id, router, showcase]);
+
+  const handlePublishedOpenChange = useCallback((isOpen: boolean) => {
+    if (!isOpen) {
+      setIsPublishedToShowcase(false);
+    }
+  }, []);
 
   const handleOpenWhatsapp = useCallback(() => {
     setIsWhatsappOpen(true);
@@ -185,6 +227,15 @@ export function ProductRowActions({
             <MessageCircle />
             Enviar por WhatsApp
           </DropdownMenuItem>
+          {canPublishToShowcase ? (
+            <DropdownMenuItem
+              disabled={isPublishingToShowcase}
+              onClick={handlePublishToShowcase}
+            >
+              <Store />
+              Publicar na vitrine
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuItem onClick={handleOpenDelete} variant="destructive">
             <Trash2 />
             Excluir
@@ -220,6 +271,15 @@ export function ProductRowActions({
         open={isDeleteOpen}
         title="Excluir produto?"
         variant="warning"
+      />
+
+      <ModalCommunication
+        description={`"${product.productName}" foi para a vitrine. Ele só aparece ao público se a vitrine estiver publicada e dentro do limite do plano.`}
+        extraAction={{ href: "/vitrine", label: "Ver vitrine" }}
+        onOpenChange={handlePublishedOpenChange}
+        open={isPublishedToShowcase}
+        title="Produto publicado na vitrine"
+        variant="success"
       />
 
       <ModalCommunication

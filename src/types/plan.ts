@@ -5,7 +5,9 @@ export type PlanEntitlementKey =
   | "ProductHistoryMonths"
   | "CompanyLogoInQuote"
   | "RemoveBrandingFooter"
-  | "OptionalCostsEnabled";
+  | "OptionalCostsEnabled"
+  | "ShowcaseEnabled"
+  | "MaxShowcaseItems";
 
 // Chaves vêm do catálogo do backend: código genérico usa `string`, a união serve para pontos que consomem uma regra específica.
 export type EntitlementType = "limit" | "feature";
