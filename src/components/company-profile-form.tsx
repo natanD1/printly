@@ -166,6 +166,10 @@ export function CompanyProfileForm({
             <div className="flex flex-col gap-1.5 sm:col-span-2">
               <Label htmlFor="company-name">Nome da empresa</Label>
               <Input id="company-name" {...register("name")} />
+              <span className="text-muted-foreground text-xs">
+                Também define o endereço da sua vitrine pública. Trocar o nome
+                troca o link, e o antigo deixa de funcionar.
+              </span>
               <FieldError message={errors.name?.message} />
             </div>
 

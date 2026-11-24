@@ -72,9 +72,9 @@ export function PricingOverview() {
 
   if (availablePlans.plans.length === 0) {
     return (
-      <p className="text-center text-muted-foreground text-sm">
+      <div className="flex min-h-48 flex-1 items-center justify-center p-8 text-center text-muted-foreground text-sm">
         Nenhum plano disponível no momento.
-      </p>
+      </div>
     );
   }
 

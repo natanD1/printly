@@ -5,6 +5,7 @@ const protectedRoutes = [
   "/home",
   "/filamentos",
   "/impressoras",
+  "/vitrine",
   "/configuracoes",
   "/convites",
   "/marcas-filamento",

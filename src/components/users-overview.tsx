@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildUsersColumns } from "@/components/users-columns";
+import { useAdminShowcases } from "@/hooks/use-admin-showcases";
+import { useAuth } from "@/hooks/use-auth";
 import { useManagedUsers } from "@/hooks/use-managed-users";
 import { usePlans } from "@/hooks/use-plans";
 
@@ -14,6 +16,12 @@ export function UsersOverview() {
   const { changeUserPlan, error, fetchUsers, isLoading, users } =
     useManagedUsers();
   const { error: plansError, plans } = usePlans();
+  const { user: currentUser } = useAuth();
+  const {
+    error: showcasesError,
+    setBlocked,
+    showcases,
+  } = useAdminShowcases(Boolean(currentUser?.isAdmin));
   const [search, setSearch] = useState("");
 
   const handleSearchChange = useCallback(
@@ -37,12 +45,17 @@ export function UsersOverview() {
     );
   }, [search, users]);
 
-  const columns = useMemo(
-    () => buildUsersColumns(plans, changeUserPlan),
-    [changeUserPlan, plans]
+  const showcasesByUser = useMemo(
+    () => new Map(showcases.map((showcase) => [showcase.userId, showcase])),
+    [showcases]
   );
 
-  const errorMessage = error ?? plansError;
+  const columns = useMemo(
+    () => buildUsersColumns(plans, changeUserPlan, showcasesByUser, setBlocked),
+    [changeUserPlan, plans, setBlocked, showcasesByUser]
+  );
+
+  const errorMessage = error ?? plansError ?? showcasesError;
 
   return (
     <div className="flex flex-1 flex-col gap-4">

@@ -5,6 +5,8 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  /** URL pública do site (ex: https://app.printly.com.br), usada em links absolutos como `og:image`. Sem ela, usa o header `host`. */
+  SITE_URL: z.url().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
