@@ -151,7 +151,7 @@ export function ShowcaseManager({ showcase }: ShowcaseManagerProps) {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       {isBlocked ? (
         <Banner tone="danger">
           <span className="flex items-center gap-2 font-medium">
@@ -244,10 +244,12 @@ export function ShowcaseManager({ showcase }: ShowcaseManagerProps) {
           ))}
         </ul>
       ) : (
-        <p className="py-6 text-center text-muted-foreground text-sm">
-          <Store className="mx-auto mb-2 size-8" />
-          Nenhum produto na vitrine ainda. Adicione produtos já produzidos.
-        </p>
+        <div className="flex min-h-48 flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-muted-foreground">
+          <Store aria-hidden="true" className="size-8" />
+          <p className="text-sm">
+            Nenhum produto na vitrine ainda. Adicione produtos já produzidos.
+          </p>
+        </div>
       )}
 
       <ShowcaseAddProductsSheet

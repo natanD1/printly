@@ -24,7 +24,7 @@ export function PrintersOverview() {
   const { canCreate, limit } = useEntitlement("MaxPrinters");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-muted-foreground text-sm">
           Cada impressora tem seus próprios custos. O preço de um produto é
@@ -61,25 +61,27 @@ export function PrintersOverview() {
             <Skeleton className="h-24 w-full" key={key} />
           ))}
         </div>
-      ) : (
+      ) : null}
+
+      {!isLoading && printers.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {printers.length ? (
-            printers.map((printer) => (
-              <PrinterCard
-                key={printer.id}
-                onDelete={deletePrinter}
-                onUpdate={updatePrinter}
-                printer={printer}
-              />
-            ))
-          ) : (
-            <p className="col-span-full text-center text-muted-foreground text-sm">
-              <Printer3d className="mx-auto mb-2 size-8" />
-              Nenhuma impressora cadastrada.
-            </p>
-          )}
+          {printers.map((printer) => (
+            <PrinterCard
+              key={printer.id}
+              onDelete={deletePrinter}
+              onUpdate={updatePrinter}
+              printer={printer}
+            />
+          ))}
         </div>
-      )}
+      ) : null}
+
+      {!isLoading && printers.length === 0 ? (
+        <div className="flex min-h-64 flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-muted-foreground">
+          <Printer3d aria-hidden="true" className="size-8" />
+          <p className="text-sm">Nenhuma impressora cadastrada.</p>
+        </div>
+      ) : null}
     </div>
   );
 }

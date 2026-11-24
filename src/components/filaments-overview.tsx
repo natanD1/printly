@@ -63,7 +63,7 @@ export function FilamentsOverview() {
   }, [products]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <TotalFilamentsCountIndicator count={filaments.length} />
         <TotalFilamentWeightIndicator kilograms={totalWeightKg} />
@@ -84,25 +84,27 @@ export function FilamentsOverview() {
             <Skeleton className="h-20 w-full" key={key} />
           ))}
         </div>
-      ) : (
+      ) : null}
+
+      {!isLoading && filteredFilaments.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredFilaments.length ? (
-            filteredFilaments.map((filament) => (
-              <FilamentCard
-                filament={filament}
-                key={filament.id}
-                onDelete={deleteFilament}
-                onUpdate={updateFilament}
-              />
-            ))
-          ) : (
-            <p className="col-span-full text-center text-muted-foreground text-sm">
-              <BrushCleaning className="mx-auto mb-2 size-8" />
-              Nenhum filamento cadastrado.
-            </p>
-          )}
+          {filteredFilaments.map((filament) => (
+            <FilamentCard
+              filament={filament}
+              key={filament.id}
+              onDelete={deleteFilament}
+              onUpdate={updateFilament}
+            />
+          ))}
         </div>
-      )}
+      ) : null}
+
+      {!isLoading && filteredFilaments.length === 0 ? (
+        <div className="flex min-h-64 flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-muted-foreground">
+          <BrushCleaning aria-hidden="true" className="size-8" />
+          <p className="text-sm">Nenhum filamento cadastrado.</p>
+        </div>
+      ) : null}
     </div>
   );
 }
